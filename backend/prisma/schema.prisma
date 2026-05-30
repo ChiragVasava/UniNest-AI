@@ -1,0 +1,351 @@
+// This is your Prisma schema file.
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// BASE USER MODEL (Single Table Inheritance)
+// ============================================
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String   // hashed with bcryptjs
+  role      UserRole @default(STUDENT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations to specific user types
+  student   Student?
+  company   Company?
+
+  @@index([email])
+  @@map("users")
+}
+
+enum UserRole {
+  STUDENT
+  COMPANY
+  ADMIN
+}
+
+// ============================================
+// STUDENT PROFILE
+// ============================================
+model Student {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Profile info
+  firstName     String?
+  lastName      String?
+  rollNumber    String   @unique // must be unique
+  phone         String?
+  profilePhoto  String?
+  
+  // Academic info
+  cgpa          Float    @default(0)
+  department    String   // CSE, ECE, ME, etc.
+  batch         Int      // 2024, 2025, etc.
+  college       String?
+  
+  // Profile verification
+  isProfileVerified Boolean @default(false)
+  verificationStatus VerificationStatus @default(PENDING)
+  rejectionReason   String?
+  isProfileLocked   Boolean @default(false) // Admin can lock profile
+  
+  // Relations
+  resumes       Resume[]
+  applications  DriveApplication[]
+  offers        Offer[]
+  interviews    InterviewSchedule[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([rollNumber])
+  @@index([cgpa])
+  @@index([department])
+  @@index([batch])
+  @@map("students")
+}
+
+// ============================================
+// COMPANY PROFILE
+// ============================================
+model Company {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Company info
+  companyName   String
+  registrationId String  @unique
+  sector        String   // Tech, Finance, etc.
+  website       String?
+  logo          String?
+  contactPerson String?
+  contactEmail  String?
+  contactPhone  String?
+  address       String?
+  
+  // Profile completion
+  isProfileComplete Boolean @default(false)
+  isApproved    Boolean @default(false) // Admin approval
+  
+  // Relations
+  drives        Drive[]
+  interviews    InterviewSchedule[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyName])
+  @@map("companies")
+}
+
+// ============================================
+// RESUMES
+// ============================================
+model Resume {
+  id          String   @id @default(cuid())
+  studentId   String
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  
+  // File info
+  fileName    String
+  filePath    String   // URL or local path
+  fileSize    Int      // in bytes
+  
+  // Content extraction
+  extractedText String? // PDF text extracted by pdf-parse
+  
+  // Verification
+  isVerified  Boolean  @default(false)
+  verifiedAt  DateTime?
+  verifyComment String?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([studentId])
+  @@map("resumes")
+}
+
+// ============================================
+// PLACEMENT DRIVES
+// ============================================
+model Drive {
+  id          String   @id @default(cuid())
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  // Drive info
+  title       String   // Job title/role
+  description String?
+  jobDescription String? // Full JD text
+  
+  // Requirements
+  salary      Float?   // CTC
+  cgpaCutoff  Float    @default(0)
+  eligibleDepartments String[] // ["CSE", "ECE"]
+  eligibleBatches Int[]   // [2024, 2025]
+  requiredSkills String[]
+  
+  // Interview format
+  interviewFormat String @default("Online") // Online, Offline, Hybrid
+  
+  // Status
+  isActive    Boolean  @default(true)
+  
+  // Relations
+  applications DriveApplication[]
+  offers      Offer[]
+  interviews  InterviewSchedule[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([isActive])
+  @@map("drives")
+}
+
+// ============================================
+// DRIVE APPLICATIONS (Many-to-Many Bridge)
+// ============================================
+model DriveApplication {
+  id          String   @id @default(cuid())
+  studentId   String
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  driveId     String
+  drive       Drive    @relation(fields: [driveId], references: [id], onDelete: Cascade)
+  
+  // Status tracking
+  status      DriveApplicationStatus @default(APPLIED)
+  rejectionReason String?
+  
+  appliedAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Unique constraint: student can apply for drive only once
+  timelineEvents ApplicationTimeline[]
+  interviews InterviewSchedule[]
+
+  @@unique([studentId, driveId])
+  @@index([studentId])
+  @@index([driveId])
+  @@index([status])
+  @@map("drive_applications")
+}
+
+enum DriveApplicationStatus {
+  APPLIED
+  SHORTLISTED
+  REJECTED
+  ACCEPTED_OFFER
+}
+
+// ============================================
+// OFFERS
+// ============================================
+model Offer {
+  id          String   @id @default(cuid())
+  studentId   String
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  driveId     String
+  drive       Drive    @relation(fields: [driveId], references: [id], onDelete: Cascade)
+  
+  // Offer details (JSON for flexibility)
+  salary      Float
+  joinDate    DateTime?
+  offerDetails Json? // Additional terms as JSON
+  
+  // Status tracking
+  status      OfferStatus @default(PENDING)
+  counterOfferText String?
+  expiresAt   DateTime?
+  auditTrail  OfferAudit[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([studentId])
+  @@index([driveId])
+  @@index([status])
+  @@map("offers")
+}
+
+enum OfferStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  COUNTERED
+  EXPIRED
+}
+
+model InterviewSchedule {
+  id            String   @id @default(cuid())
+  applicationId String
+  application   DriveApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  driveId       String
+  drive         Drive    @relation(fields: [driveId], references: [id], onDelete: Cascade)
+  companyId     String
+  company       Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  studentId     String
+  student       Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  scheduledAt   DateTime
+  mode          InterviewMode @default(ONLINE)
+  meetingLink   String?
+  notes         String?
+  confirmationStatus InterviewConfirmationStatus @default(PENDING)
+  createdByUserId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([applicationId])
+  @@index([driveId])
+  @@index([studentId])
+  @@index([companyId])
+  @@map("interview_schedules")
+}
+
+model ApplicationTimeline {
+  id            String   @id @default(cuid())
+  applicationId String
+  application   DriveApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  stage         ApplicationStage
+  note          String?
+  metadata      Json?
+  createdByUserId String?
+  createdAt     DateTime @default(now())
+
+  @@index([applicationId])
+  @@index([stage])
+  @@map("application_timeline")
+}
+
+model OfferAudit {
+  id          String   @id @default(cuid())
+  offerId     String
+  offer       Offer    @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  action      OfferAuditAction
+  note        String?
+  metadata    Json?
+  actorUserId String?
+  createdAt   DateTime @default(now())
+
+  @@index([offerId])
+  @@index([action])
+  @@map("offer_audit")
+}
+
+enum ApplicationStage {
+  APPLIED
+  SHORTLISTED
+  INTERVIEW_SCHEDULED
+  INTERVIEWED
+  OFFER_SENT
+  REJECTED
+  HIRED
+}
+
+enum InterviewMode {
+  ONLINE
+  OFFLINE
+  HYBRID
+}
+
+enum InterviewConfirmationStatus {
+  PENDING
+  CONFIRMED
+  RESCHEDULE_REQUESTED
+}
+
+enum OfferAuditAction {
+  SENT
+  ACCEPTED
+  REJECTED
+  COUNTERED
+  COUNTER_RESPONSE
+  EXPIRED
+}
+
+// ============================================
+// VERIFICATION STATUS
+// ============================================
+enum VerificationStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
