@@ -3,9 +3,11 @@
   "version": "1.0.0",
   "description": "UniNest AI - Backend API for Campus Recruitment System",
   "main": "dist/server.js",
+  
 "scripts": {
   "dev": "ts-node src/server.ts",
   "build": "prisma generate && tsc",
+  "vercel-build": "prisma generate && tsc",
   "start": "node dist/server.js",
   "postinstall": "prisma generate",
   "prisma:generate": "prisma generate",
