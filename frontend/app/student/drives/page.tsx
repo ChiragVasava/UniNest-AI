@@ -33,7 +33,9 @@ export default function StudentDrivesPage() {
     const fetchDrives = async () => {
       setLoading(true);
       try {
-        const res = await driveAPI.getAll();
+        // Request a very large limit so the backend returns all drives
+        // (backend may still cap results server-side).
+        const res = await driveAPI.getAll(1000000);
         setDrives(res.data?.data?.drives || []);
       } catch {
         setError('Failed to load drives. Please try again.');

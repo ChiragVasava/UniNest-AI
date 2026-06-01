@@ -121,7 +121,7 @@ export function RegisterForm() {
           />
         </div>
 
-        <Button type="submit" isLoading={loading} className="w-full">
+        <Button type="submit" isLoading={loading} className="w-full bg-black text-white hover:bg-gray-800 focus:ring-4 focus:ring-gray-300">
           {loading ? <LoadingSpinner /> : 'Register'}
         </Button>
       </form>
