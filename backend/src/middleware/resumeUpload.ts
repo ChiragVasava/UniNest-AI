@@ -1,8 +1,24 @@
 import multer from "multer";
 import fs from "fs";
+import os from "os";
 import path from "path";
 
-const resumeUploadDir = path.join(process.cwd(), "uploads", "resumes");
+const resolveUploadBaseDir = () => {
+  const configuredDir = process.env.UPLOAD_DIR;
+  if (configuredDir) {
+    return path.isAbsolute(configuredDir)
+      ? configuredDir
+      : path.join(process.cwd(), configuredDir);
+  }
+
+  if (process.env.VERCEL) {
+    return path.join(os.tmpdir(), "uninest-uploads");
+  }
+
+  return path.join(process.cwd(), "uploads");
+};
+
+const resumeUploadDir = path.join(resolveUploadBaseDir(), "resumes");
 
 if (!fs.existsSync(resumeUploadDir)) {
   fs.mkdirSync(resumeUploadDir, { recursive: true });
