@@ -1,0 +1,26 @@
+**⚠️ IMPORTANT: Next.js Folder Conflict Fix**
+
+The following folders need to be **MANUALLY DELETED** to fix the parallel routes conflict:
+
+1. Delete: `app/(student)/` folder
+2. Delete: `app/(company)/` folder
+
+**Why?**
+- The new routes are: `app/student/dashboard` and `app/company/dashboard`
+- The old parallel routes: `app/(student)/` and `app/(company)/` were causing conflicts
+- Next.js doesn't allow two route groups to resolve to the same paths
+
+**After deletion:**
+- Restart the dev server: Press Ctrl+C and run `npm run dev` again
+- Frontend should load without errors ✅
+
+**New Route Structure:**
+```
+app/
+├── (auth)/        - Public routes
+├── student/       - Protected student routes
+├── company/       - Protected company routes
+└── page.tsx       - Home (redirects to dashboard)
+```
+
+Please delete these folders and restart the dev server!
