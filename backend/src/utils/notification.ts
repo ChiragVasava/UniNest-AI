@@ -38,6 +38,15 @@ const mailTransporter = createMailTransporter();
  */
 export const sendEmail = async (to: string, subject: string, body: string, htmlBody?: string) => {
   const from = process.env.SMTP_FROM || '"UniNest AI" <noreply@uninest.com>';
+  
+  // Always log to backend terminal for developer convenience
+  console.log("------------------------------------------");
+  console.log(`✉️  [EMAIL TRIGGERED]`);
+  console.log(`To:      ${to}`);
+  console.log(`Subject: ${subject}`);
+  console.log(`Body:    ${body}`);
+  console.log("------------------------------------------");
+
   try {
     await mailTransporter.sendMail({
       from,
@@ -47,7 +56,7 @@ export const sendEmail = async (to: string, subject: string, body: string, htmlB
       html: htmlBody || body,
     });
   } catch (error) {
-    console.error("❌ Failed to send email:", error);
+    console.error("❌ Failed to send email via SMTP transporter:", error);
   }
 };
 
