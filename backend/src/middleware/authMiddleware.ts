@@ -27,8 +27,10 @@ export const authMiddleware = (
       throw new AppError(401, "Invalid or expired token");
     }
 
-    // Attach user ID to request
+    // Attach user ID, role, and full payload to request
     (req as any).userId = decoded.id;
+    (req as any).userRole = decoded.role;
+    (req as any).user = decoded;
 
     next();
   } catch (error) {
