@@ -52,6 +52,12 @@ router.post("/", authMiddleware, resumeUpload.single("resume"), resumeController
 router.post("/:id/match", authMiddleware, resumeController.matchResume);
 
 /**
+ * GET /api/v1/resumes/:id/feedback
+ * Get AI feedback and suggestions on a resume
+ */
+router.get("/:id/feedback", authMiddleware, resumeController.getFeedback);
+
+/**
  * GET /api/v1/resumes/me/list
  * Get my resumes (Student only)
  * Query params: limit, offset

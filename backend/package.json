@@ -3,18 +3,17 @@
   "version": "1.0.0",
   "description": "UniNest AI - Backend API for Campus Recruitment System",
   "main": "dist/server.js",
-  
-"scripts": {
-  "dev": "ts-node src/server.ts",
-  "build": "prisma generate && tsc",
-  "vercel-build": "prisma generate && tsc",
-  "start": "node dist/server.js",
-  "postinstall": "prisma generate",
-  "prisma:generate": "prisma generate",
-  "prisma:migrate": "prisma migrate dev",
-  "prisma:seed": "ts-node src/prisma/seed.ts",
-  "lint": "eslint src --ext .ts"
-},
+  "scripts": {
+    "dev": "ts-node src/server.ts",
+    "build": "prisma generate && tsc",
+    "vercel-build": "prisma generate && tsc",
+    "start": "node dist/server.js",
+    "postinstall": "prisma generate",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:seed": "ts-node src/prisma/seed.ts",
+    "lint": "eslint src --ext .ts"
+  },
   "dependencies": {
     "@prisma/client": "^5.0.0",
     "axios": "^1.4.0",
@@ -25,7 +24,9 @@
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.0",
     "multer": "^1.4.5-lts.1",
+    "nodemailer": "^9.0.3",
     "pdf-parse": "^1.1.1",
+    "twilio": "^6.0.2",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
@@ -35,6 +36,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/multer": "^1.4.11",
     "@types/node": "^20.10.6",
+    "@types/nodemailer": "^8.0.1",
     "@typescript-eslint/eslint-plugin": "^6.15.0",
     "@typescript-eslint/parser": "^6.15.0",
     "eslint": "^8.55.0",

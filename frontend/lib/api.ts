@@ -59,14 +59,7 @@ api.interceptors.response.use(
   }
 );
 
-// Auth endpoints
-export const authAPI = {
-  register: (email: string, password: string, confirmPassword: string, role: string) =>
-    api.post('/auth/register', { email, password, confirmPassword, role }),
-  login: (email: string, password: string) =>
-    api.post('/auth/login', { email, password }),
-  getMe: () => api.get('/auth/me'),
-};
+// Auth endpoints are now defined at the bottom of the file
 
 // Student endpoints
 export const studentAPI = {
@@ -147,25 +140,7 @@ export const applicationAPI = {
   getStatistics: () => api.get('/applications/statistics'),
 };
 
-// Resume endpoints
-export const resumeAPI = {
-  upload: (data: FormData | Record<string, unknown>) => api.post('/resumes', data),
-  getById: (id: string) => api.get(`/resumes/${id}`),
-  getMyResumes: (limit = 10, offset = 0) =>
-    api.get(`/resumes/me/list?limit=${limit}&offset=${offset}`),
-  getVerified: () => api.get('/resumes/me/verified'),
-  getAll: (limit = 10, offset = 0) =>
-    api.get(`/resumes?limit=${limit}&offset=${offset}`),
-  getPending: (limit = 10, offset = 0) =>
-    api.get(`/resumes/pending?limit=${limit}&offset=${offset}`),
-  update: (id: string, data: Record<string, unknown>) => api.put(`/resumes/${id}`, data),
-  verify: (id: string, verifyComment: string) =>
-    api.post(`/resumes/${id}/verify`, { verifyComment }),
-  reject: (id: string, rejectionReason: string) =>
-    api.post(`/resumes/${id}/reject`, { verifyComment: rejectionReason }),
-  delete: (id: string) => api.delete(`/resumes/${id}`),
-  getStatistics: () => api.get('/resumes/statistics'),
-};
+// Resume endpoints are now defined at the bottom of the file
 
 // Offer endpoints
 export const offerAPI = {
@@ -188,6 +163,70 @@ export const offerAPI = {
     api.post(`/offers/${id}/counter/respond`, { decision, note }),
   getAuditTrail: (id: string) => api.get(`/offers/${id}/audit`),
   getStatistics: () => api.get('/offers/statistics'),
+  generateEmail: (id: string) => api.post(`/offers/${id}/generate-email`),
+};
+
+// University endpoints
+export const universityAPI = {
+  manualOnboard: (data: Record<string, unknown>) => api.post('/universities/students/manual', data),
+  bulkOnboard: (formData: FormData) => api.post('/universities/students/bulk', formData),
+  getPendingStudents: () => api.get('/universities/students/pending'),
+  verifyStudent: (id: string) => api.post(`/universities/students/${id}/verify`),
+  rejectStudent: (id: string, reason: string) => api.post(`/universities/students/${id}/reject`, { reason }),
+  toggleLockStudent: (id: string, lock: boolean) => api.post(`/universities/students/${id}/lock`, { lock }),
+  getDepartments: () => api.get('/universities/departments'),
+  createDepartment: (name: string, code: string) => api.post('/universities/departments', { name, code }),
+  createSubDepartment: (deptId: string, name: string, code: string) =>
+    api.post(`/universities/departments/${deptId}/sub-departments`, { name, code }),
+  createClass: (subDeptId: string, name: string, batch: number) =>
+    api.post(`/universities/sub-departments/${subDeptId}/classes`, { name, batch }),
+  getClasses: (subDeptId: string) => api.get(`/universities/sub-departments/${subDeptId}/classes`),
+  inviteCompany: (email: string, companyName: string) => api.post('/universities/companies/invite', { email, companyName }),
+  getDriveRequests: () => api.get('/universities/drives/requests'),
+  approveDrive: (id: string) => api.post(`/universities/drives/${id}/approve`),
+};
+
+// Admin endpoints
+export const adminAPI = {
+  createUniversity: (data: Record<string, unknown>) => api.post('/admin/universities', data),
+  getUniversities: () => api.get('/admin/universities'),
+  approveUniversity: (id: string) => api.post(`/admin/universities/${id}/approve`),
+  suspendUniversity: (id: string) => api.post(`/admin/universities/${id}/suspend`),
+  updateBillingPlan: (id: string, plan: string) => api.post(`/admin/universities/${id}/billing`, { plan }),
+  getMetrics: () => api.get('/admin/dashboard/metrics'),
+  globalSearchStudents: (params: Record<string, unknown>) => api.get('/admin/students', { params }),
+};
+
+// Update authAPI with OTP functions
+export const authAPI = {
+  register: (email: string, password: string, confirmPassword: string, role: string, universityName?: string, universityCode?: string) =>
+    api.post('/auth/register', { email, password, confirmPassword, role, universityName, universityCode }),
+  login: (email: string, password: string) =>
+    api.post('/auth/login', { email, password }),
+  getMe: () => api.get('/auth/me'),
+  sendOtp: (phone?: string) => api.post('/auth/send-otp', { phone }),
+  verifyOtp: (emailOtp: string, phoneOtp: string) => api.post('/auth/verify-otp', { emailOtp, phoneOtp }),
+};
+
+// Update resumeAPI with Feedback function
+export const resumeAPI = {
+  upload: (data: FormData | Record<string, unknown>) => api.post('/resumes', data),
+  getById: (id: string) => api.get(`/resumes/${id}`),
+  getMyResumes: (limit = 10, offset = 0) =>
+    api.get(`/resumes/me/list?limit=${limit}&offset=${offset}`),
+  getVerified: () => api.get('/resumes/me/verified'),
+  getAll: (limit = 10, offset = 0) =>
+    api.get(`/resumes?limit=${limit}&offset=${offset}`),
+  getPending: (limit = 10, offset = 0) =>
+    api.get(`/resumes/pending?limit=${limit}&offset=${offset}`),
+  update: (id: string, data: Record<string, unknown>) => api.put(`/resumes/${id}`, data),
+  verify: (id: string, verifyComment: string) =>
+    api.post(`/resumes/${id}/verify`, { verifyComment }),
+  reject: (id: string, rejectionReason: string) =>
+    api.post(`/resumes/${id}/reject`, { verifyComment: rejectionReason }),
+  delete: (id: string) => api.delete(`/resumes/${id}`),
+  getStatistics: () => api.get('/resumes/statistics'),
+  getFeedback: (id: string) => api.get(`/resumes/${id}/feedback`),
 };
 
 // Health check

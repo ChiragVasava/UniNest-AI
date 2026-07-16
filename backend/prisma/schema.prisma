@@ -14,16 +14,18 @@ datasource db {
 // BASE USER MODEL (Single Table Inheritance)
 // ============================================
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String   // hashed with bcryptjs
-  role      UserRole @default(STUDENT)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String   @id @default(cuid())
+  email         String   @unique
+  password      String   // hashed with bcryptjs
+  role          UserRole @default(STUDENT)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   // Relations to specific user types
-  student   Student?
-  company   Company?
+  student       Student?
+  company       Company?
+  university    University?
+  facultyAdmin  FacultyAdmin?
 
   @@index([email])
   @@map("users")
@@ -33,6 +35,7 @@ enum UserRole {
   STUDENT
   COMPANY
   ADMIN
+  UNIVERSITY
 }
 
 // ============================================
@@ -55,6 +58,12 @@ model Student {
   department    String   // CSE, ECE, ME, etc.
   batch         Int      // 2024, 2025, etc.
   college       String?
+  
+  // University Linkages
+  universityId  String?
+  university    University? @relation(fields: [universityId], references: [id], onDelete: SetNull)
+  classId       String?
+  class         Class?      @relation(fields: [classId], references: [id], onDelete: SetNull)
   
   // Profile verification
   isProfileVerified Boolean @default(false)
@@ -144,9 +153,14 @@ model Resume {
 // PLACEMENT DRIVES
 // ============================================
 model Drive {
-  id          String   @id @default(cuid())
-  companyId   String
-  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  id            String   @id @default(cuid())
+  companyId     String
+  company       Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  // University routing for approvals
+  universityId  String?
+  university    University? @relation(fields: [universityId], references: [id], onDelete: SetNull)
+  isApproved    Boolean     @default(true) // True for directly created drives, false for company requests awaiting approval
   
   // Drive info
   title       String   // Job title/role
@@ -348,4 +362,135 @@ enum VerificationStatus {
   PENDING
   VERIFIED
   REJECTED
+}
+
+// ============================================
+// UNIVERSITY & CLASS HIERARCHY
+// ============================================
+
+model University {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  name          String
+  code          String   @unique // e.g. MSU
+  address       String?
+  website       String?
+  logo          String?
+  contactEmail  String?
+  contactPhone  String?
+  
+  isApproved    Boolean  @default(false)
+  subscriptionPlan String @default("FREE")
+  
+  // Relations
+  facultyAdmins FacultyAdmin[]
+  students      Student[]
+  departments   Department[]
+  invitedCompanies CompanyInvitation[]
+  drives        Drive[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("universities")
+}
+
+model FacultyAdmin {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  universityId  String
+  university    University @relation(fields: [universityId], references: [id], onDelete: Cascade)
+  
+  name          String
+  role          String   // e.g. SUPER_ADMIN, FACULTY_ADMIN
+  department    String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("faculty_admins")
+}
+
+model Department {
+  id            String   @id @default(cuid())
+  universityId  String
+  university    University @relation(fields: [universityId], references: [id], onDelete: Cascade)
+  name          String   // e.g. Faculty of Technology & Engineering
+  code          String   // e.g. FTE
+  
+  subDepartments SubDepartment[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([universityId, code])
+  @@map("departments")
+}
+
+model SubDepartment {
+  id            String   @id @default(cuid())
+  departmentId  String
+  department    Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  name          String   // e.g. Computer Science & Engineering
+  code          String   // e.g. CSE
+  
+  classes       Class[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([departmentId, code])
+  @@map("sub_departments")
+}
+
+model Class {
+  id              String   @id @default(cuid())
+  subDepartmentId String
+  subDepartment   SubDepartment @relation(fields: [subDepartmentId], references: [id], onDelete: Cascade)
+  name            String   // e.g. BE-IV-CSE-A
+  batch           Int      // e.g. 2024
+  
+  students        Student[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([subDepartmentId, name, batch])
+  @@map("classes")
+}
+
+model CompanyInvitation {
+  id            String   @id @default(cuid())
+  universityId  String
+  university    University @relation(fields: [universityId], references: [id], onDelete: Cascade)
+  email         String
+  companyName   String
+  token         String   @unique
+  status        InvitationStatus @default(PENDING)
+  createdAt     DateTime @default(now())
+  
+  @@unique([universityId, email])
+  @@map("company_invitations")
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+}
+
+model OTPVerification {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  emailOtp    String
+  phoneOtp    String
+  emailVerified Boolean @default(false)
+  phoneVerified Boolean @default(false)
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+  
+  @@map("otp_verifications")
 }

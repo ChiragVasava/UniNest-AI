@@ -357,3 +357,132 @@ export const analyzeResumeForAts = async (
     return fallback;
   }
 };
+
+export type ResumeFeedbackResult = {
+  summary: string;
+  formattingTips: string[];
+  skillEnhancements: string[];
+  projectSuggestions: string[];
+  layoutAdvice: string[];
+};
+
+export const generateResumeFeedback = async (resumeText: string): Promise<ResumeFeedbackResult> => {
+  const apiKey = process.env.GEMINI_API_KEY;
+  const fallback: ResumeFeedbackResult = {
+    summary: "Your resume contains standard academic and project descriptions.",
+    formattingTips: [
+      "Ensure headings are prominent and distinct from body copy.",
+      "Use clear bullet points for readability rather than paragraphs."
+    ],
+    skillEnhancements: [
+      "Group your skills by categories (e.g. Languages, Libraries, Tools) to make it scannable.",
+      "Add context to skills by listing where you applied them."
+    ],
+    projectSuggestions: [
+      "Quantify your results using metrics (e.g., 'improved performance by 20%').",
+      "Mention the design patterns or databases you selected and why."
+    ],
+    layoutAdvice: [
+      "Limit your resume to one single page.",
+      "Use standard, clear margins and uniform whitespace distribution."
+    ]
+  };
+
+  if (!apiKey) {
+    return fallback;
+  }
+
+  const prompt = [
+    `You are an expert resume reviewer and career coach.`,
+    `Review this resume text and provide specific, constructive suggestions for improvement.`,
+    `Resume text: ${resumeText}`,
+    `Return ONLY valid JSON with exactly these keys: summary (string), formattingTips (string array), skillEnhancements (string array), projectSuggestions (string array), layoutAdvice (string array).`
+  ].join("\n\n");
+
+  try {
+    const response = await axios.post(
+      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`,
+      {
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.3,
+          maxOutputTokens: 512,
+        }
+      },
+      { timeout: 20000 }
+    );
+
+    const responseText = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    const payload = extractJsonPayload(responseText);
+    if (!payload) return fallback;
+
+    const parsed = JSON.parse(payload) as Partial<ResumeFeedbackResult>;
+    return {
+      summary: parsed.summary || fallback.summary,
+      formattingTips: normalizeArray(parsed.formattingTips).length ? normalizeArray(parsed.formattingTips) : fallback.formattingTips,
+      skillEnhancements: normalizeArray(parsed.skillEnhancements).length ? normalizeArray(parsed.skillEnhancements) : fallback.skillEnhancements,
+      projectSuggestions: normalizeArray(parsed.projectSuggestions).length ? normalizeArray(parsed.projectSuggestions) : fallback.projectSuggestions,
+      layoutAdvice: normalizeArray(parsed.layoutAdvice).length ? normalizeArray(parsed.layoutAdvice) : fallback.layoutAdvice,
+    };
+  } catch {
+    return fallback;
+  }
+};
+
+export type OfferEmailResult = {
+  subject: string;
+  body: string;
+};
+
+export const generateOfferEmail = async (
+  studentName: string,
+  companyName: string,
+  roleName: string,
+  salary: number
+): Promise<OfferEmailResult> => {
+  const apiKey = process.env.GEMINI_API_KEY;
+  const fallback: OfferEmailResult = {
+    subject: `Job Offer - ${roleName} at ${companyName}`,
+    body: `Dear ${studentName},\n\nWe are pleased to offer you the position of ${roleName} at ${companyName}. We were highly impressed by your qualifications during our placement process.\n\nPosition Details:\n- Role: ${roleName}\n- Annual CTC: INR ${salary.toLocaleString()}\n\nPlease review these details and respond through the UniNest Portal to accept or reject the offer.\n\nBest regards,\nRecruitment Team\n${companyName}`
+  };
+
+  if (!apiKey) {
+    return fallback;
+  }
+
+  const prompt = [
+    `You are a Human Resources Director.`,
+    `Draft a professional, warm, and formal job offer letter/email.`,
+    `Candidate: ${studentName}`,
+    `Company: ${companyName}`,
+    `Role: ${roleName}`,
+    `Salary: INR ${salary.toLocaleString()}`,
+    `Return ONLY valid JSON with exactly these keys: subject (string), body (string).`
+  ].join("\n\n");
+
+  try {
+    const response = await axios.post(
+      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`,
+      {
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.4,
+          maxOutputTokens: 512,
+        }
+      },
+      { timeout: 20000 }
+    );
+
+    const responseText = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    const payload = extractJsonPayload(responseText);
+    if (!payload) return fallback;
+
+    const parsed = JSON.parse(payload) as Partial<OfferEmailResult>;
+    return {
+      subject: parsed.subject || fallback.subject,
+      body: parsed.body || fallback.body,
+    };
+  } catch {
+    return fallback;
+  }
+};

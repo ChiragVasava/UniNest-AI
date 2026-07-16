@@ -109,4 +109,10 @@ router.post(
  */
 router.get("/:id/audit", authMiddleware, offerController.getOfferAuditTrail);
 
+/**
+ * POST /api/v1/offers/:id/generate-email
+ * Generate AI email draft template for the offer
+ */
+router.post("/:id/generate-email", authMiddleware, offerController.generateEmailTemplate);
+
 export default router;

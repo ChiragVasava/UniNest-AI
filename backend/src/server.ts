@@ -10,6 +10,8 @@ import driveRoutes from "./routes/driveRoutes";
 import driveApplicationRoutes from "./routes/driveApplicationRoutes";
 import resumeRoutes from "./routes/resumeRoutes";
 import offerRoutes from "./routes/offerRoutes";
+import universityRoutes from "./routes/universityRoutes";
+import adminRoutes from "./routes/adminRoutes";
 
 // Load environment variables
 dotenv.config();
@@ -57,6 +59,12 @@ app.use("/api/v1/resumes", resumeRoutes);
 
 // Offer routes
 app.use("/api/v1/offers", offerRoutes);
+
+// University routes
+app.use("/api/v1/universities", universityRoutes);
+
+// Admin routes
+app.use("/api/v1/admin", adminRoutes);
 
 // 404 handler
 app.use((_req: Request, res: Response) => {

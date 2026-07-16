@@ -51,6 +51,11 @@ export default function CompanyOffersPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
+  // AI Email Generator state
+  const [emailTemplate, setEmailTemplate] = useState<{ subject: string; body: string } | null>(null);
+  const [loadingEmail, setLoadingEmail] = useState(false);
+  const [emailStudentName, setEmailStudentName] = useState('');
+
   // drives are loaded in the initial effect below
 
   const loadDriveData = async (driveId: string) => {
@@ -210,6 +215,23 @@ export default function CompanyOffersPage() {
     }
   };
 
+  const handleGenerateEmail = async (offerId: string, studentName: string) => {
+    setError('');
+    setSuccess('');
+    setEmailTemplate(null);
+    setEmailStudentName(studentName);
+    setLoadingEmail(true);
+
+    try {
+      const res = await offerAPI.generateEmail(offerId);
+      setEmailTemplate(res.data.data);
+    } catch (err: any) {
+      setError('Failed to generate AI offer email.');
+    } finally {
+      setLoadingEmail(false);
+    }
+  };
+
   const offerByStudentId = new Map(offers.map((offer) => [offer.student.id, offer]));
 
   return (
@@ -274,6 +296,12 @@ export default function CompanyOffersPage() {
                           {existingOffer.offerDetails.location ? ` • ${existingOffer.offerDetails.location as string}` : ''}
                         </p>
                       )}
+                      <button
+                        onClick={() => handleGenerateEmail(existingOffer.id, existingOffer.student.name)}
+                        className="text-[10px] font-bold text-blue-600 hover:underline mt-1 block"
+                      >
+                        🤖 AI Offer Email
+                      </button>
                       {existingOffer.counterOfferText && (
                         <p className="text-xs text-amber-700 max-w-xs">Counter: {existingOffer.counterOfferText}</p>
                       )}
@@ -315,6 +343,76 @@ export default function CompanyOffersPage() {
           })}
         </div>
       </div>
+
+      {/* AI Loading Modal overlay */}
+      {loadingEmail && (
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white p-6 rounded-2xl shadow-xl max-w-md w-full text-slate-800 text-center">
+            <h3 className="font-extrabold text-lg mt-3 text-slate-900">Drafting Offer Email...</h3>
+            <p className="text-sm text-slate-500 mt-1">Gemini AI is generating formal placement welcome letter.</p>
+          </div>
+        </div>
+      )}
+
+      {/* Offer Email Display Modal overlay */}
+      {emailTemplate && (
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white p-6 rounded-2xl shadow-xl max-w-xl w-full text-slate-850">
+            <div className="flex justify-between items-center border-b pb-3 mb-4">
+              <div>
+                <h3 className="font-black text-xl text-slate-900">✉️ AI Offer Email Draft</h3>
+                <p className="text-xs text-slate-500">For {emailStudentName}</p>
+              </div>
+              <button
+                onClick={() => setEmailTemplate(null)}
+                className="text-slate-400 hover:text-slate-600 text-xl font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-4 text-sm text-black">
+              <div>
+                <span className="font-semibold text-xs text-slate-500 uppercase block mb-1">Subject</span>
+                <input
+                  type="text"
+                  value={emailTemplate.subject}
+                  readOnly
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 font-medium"
+                />
+              </div>
+
+              <div>
+                <span className="font-semibold text-xs text-slate-500 uppercase block mb-1">Email Body</span>
+                <textarea
+                  value={emailTemplate.body}
+                  readOnly
+                  rows={10}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 font-mono text-xs whitespace-pre-line"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-4 border-t mt-5">
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(`Subject: ${emailTemplate.subject}\n\n${emailTemplate.body}`);
+                  alert('Copied to clipboard!');
+                }}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs transition mr-2"
+              >
+                📋 Copy Details
+              </button>
+              <button
+                onClick={() => setEmailTemplate(null)}
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl text-xs transition"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

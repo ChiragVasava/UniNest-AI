@@ -118,6 +118,7 @@ export const getResumeById = async (resumeId: string) => {
     fileName: resume.fileName,
     filePath: resume.filePath,
     fileSize: resume.fileSize,
+    extractedText: resume.extractedText,
     isVerified: resume.isVerified,
     verifyComment: resume.verifyComment,
     student: {

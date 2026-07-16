@@ -1,0 +1,666 @@
+{
+	"info": {
+		"_postman_id": "a9e62f0b-2244-46c5-a0ef-4f108d8de9bf",
+		"name": "UniNest AI Campus Placement API",
+		"description": "Postman collection for UniNest-AI campus recruitment portal covering Student, Company, Drive, University, and SaaS Admin endpoints.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Students",
+			"item": [
+				{
+					"name": "Register Student",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"student.new@college.edu\",\n  \"password\": \"Student@123\",\n  \"confirmPassword\": \"Student@123\",\n  \"role\": \"STUDENT\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login Student",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"student.new@college.edu\",\n  \"password\": \"Student@123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Send OTP Verification",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"phone\": \"+919999999999\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/send-otp",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"send-otp"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Account OTP",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"emailOtp\": \"123456\",\n  \"phoneOtp\": \"654321\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/verify-otp",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"verify-otp"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "AI Resume Feedback Review",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/resumes/SOME_RESUME_ID/feedback",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"resumes",
+								"SOME_RESUME_ID",
+								"feedback"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Companies",
+			"item": [
+				{
+					"name": "Register Company",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"hr@google.com\",\n  \"password\": \"Company@123\",\n  \"confirmPassword\": \"Company@123\",\n  \"role\": \"COMPANY\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Placement Drive",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Backend Software Engineer\",\n  \"description\": \"Responsible for back-end business logic and database configurations.\",\n  \"salary\": 12.5,\n  \"cgpaCutoff\": 8.0,\n  \"eligibleDepartments\": [\"CSE\", \"ECE\"],\n  \"eligibleBatches\": [2026],\n  \"interviewFormat\": \"Online\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/drives",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"drives"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "AI Offer Email Generator",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/offers/SOME_OFFER_ID/generate-email",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"offers",
+								"SOME_OFFER_ID",
+								"generate-email"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Drives",
+			"item": [
+				{
+					"name": "Get Eligible Drives List",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/drives/eligible/list",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"drives",
+								"eligible",
+								"list"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apply for Drive",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"driveId\": \"SOME_DRIVE_ID\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/applications",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"applications"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "University",
+			"item": [
+				{
+					"name": "Register University Node",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin@msu.edu\",\n  \"password\": \"MSU@123\",\n  \"confirmPassword\": \"MSU@123\",\n  \"role\": \"UNIVERSITY\",\n  \"universityName\": \"The Maharaja Sayajirao University of Baroda\",\n  \"universityCode\": \"MSU\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Manual Student Onboarding",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"aarav.patel@domain.edu\",\n  \"firstName\": \"Aarav\",\n  \"lastName\": \"Patel\",\n  \"rollNumber\": \"MSU-2026-CSE-001\",\n  \"phone\": \"+919999999999\",\n  \"department\": \"CSE\",\n  \"batch\": 2026,\n  \"cgpa\": 9.1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/universities/students/manual",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"universities",
+								"students",
+								"manual"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Bulk Students CSV Upload",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": ""
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/universities/students/bulk",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"universities",
+								"students",
+								"bulk"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Student profile Approval",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/universities/students/SOME_STUDENT_ID/verify",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"universities",
+								"students",
+								"SOME_STUDENT_ID",
+								"verify"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Academic Department",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Faculty of Technology\",\n  \"code\": \"FTE\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/universities/departments",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"universities",
+								"departments"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Admin",
+			"item": [
+				{
+					"name": "Get SaaS Core Metrics",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/dashboard/metrics",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"dashboard",
+								"metrics"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Billing Plan",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"plan\": \"PREMIUM\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/universities/SOME_UNIVERSITY_ID/billing",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"universities",
+								"SOME_UNIVERSITY_ID",
+								"billing"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Global Student Search Directory",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/students?search=Aarav&department=CSE&minCgpa=8.5",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"students"
+							],
+							"query": [
+								{
+									"key": "search",
+									"value": "Aarav"
+								},
+								{
+									"key": "department",
+									"value": "CSE"
+								},
+								{
+									"key": "minCgpa",
+									"value": "8.5"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000/api/v1",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "YOUR_JWT_TOKEN",
+			"type": "string"
+		}
+	]
+}

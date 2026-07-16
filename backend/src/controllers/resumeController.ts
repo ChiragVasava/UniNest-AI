@@ -295,6 +295,31 @@ export const matchResume = async (
 };
 
 /**
+ * GET /api/v1/resumes/:id/feedback
+ * Get AI feedback and recommendations for a resume
+ */
+export const getFeedback = async (
+  req: Request,
+  _res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const resume = await resumeService.getResumeById(id);
+    if (!resume || !resume.extractedText) {
+      throw new AppError(400, "Resume does not contain extracted text for AI analysis");
+    }
+
+    const { generateResumeFeedback } = await import("../services/atsService");
+    const result = await generateResumeFeedback(resume.extractedText);
+
+    _res.status(200).json({ success: true, data: result });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
  * Get resume statistics
  */
 export const getResumeStatistics = async (

@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import * as offerService from "../services/offerService";
 import { AppError } from "../middleware/errorHandler";
+import { prisma } from "../config/database";
 
 /**
  * Create offer (Company only)
@@ -382,6 +383,50 @@ export const checkAcceptedOffer = async (
       data: {
         hasAcceptedOffer: hasAccepted,
       },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * POST /api/v1/offers/:id/generate-email
+ * Generate an AI offer email draft for the candidate
+ */
+export const generateEmailTemplate = async (
+  req: Request,
+  _res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+
+    const offer = await prisma.offer.findUnique({
+      where: { id },
+      include: {
+        student: true,
+        drive: {
+          include: { company: true }
+        }
+      }
+    });
+
+    if (!offer) {
+      throw new AppError(404, "Offer not found");
+    }
+
+    const studentName = `${offer.student.firstName || ""} ${offer.student.lastName || ""}`.trim() || "Candidate";
+    const companyName = offer.drive.company.companyName;
+    const roleName = offer.drive.title;
+    const salary = offer.salary;
+
+    const { generateOfferEmail } = await import("../services/atsService");
+    const result = await generateOfferEmail(studentName, companyName, roleName, salary);
+
+    _res.status(200).json({
+      status: "success",
+      statusCode: 200,
+      data: result
     });
   } catch (error) {
     next(error);

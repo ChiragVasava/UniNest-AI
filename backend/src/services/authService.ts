@@ -19,6 +19,8 @@ export interface RegisterPayload {
   password: string;
   confirmPassword: string;
   role: UserRole;
+  universityName?: string;
+  universityCode?: string;
 }
 
 export interface LoginPayload {
@@ -38,7 +40,7 @@ export interface AuthResponse {
 export const register = async (
   payload: RegisterPayload
 ): Promise<AuthResponse> => {
-  const { email, password, confirmPassword, role } = payload;
+  const { email, password, confirmPassword, role, universityName, universityCode } = payload;
 
   // Validation
   if (!isValidEmail(email)) {
@@ -91,6 +93,18 @@ export const register = async (
         registrationId,
         sector: "Other",
         website: "",
+      });
+    }
+
+    if (role === UserRole.UNIVERSITY) {
+      const name = universityName || `University-${user.email.split("@")[0]}`;
+      const code = universityCode || `UNI-${Date.now().toString().slice(-4)}`;
+      await prisma.university.create({
+        data: {
+          userId: user.id,
+          name,
+          code,
+        },
       });
     }
   } catch (err) {

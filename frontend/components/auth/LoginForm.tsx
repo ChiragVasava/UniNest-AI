@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { authAPI } from '@/lib/api';
+import { authAPI, studentAPI } from '@/lib/api';
 import axios from 'axios';
 import { useAuth } from '@/context/AuthContext';
 import { ErrorAlert, LoadingSpinner } from '@/components/common/Alerts';
@@ -31,9 +31,21 @@ export function LoginForm() {
 
       // Redirect based on role
       if (user.role === 'STUDENT') {
+        try {
+          // Check student verification status
+          const profile = await studentAPI.getProfile();
+          if (profile.data.data.verificationStatus === 'PENDING') {
+            router.push('/student/verify');
+            return;
+          }
+        } catch (e) {
+          // Fallback if profile not fully created yet
+        }
         router.push('/student/dashboard');
       } else if (user.role === 'COMPANY') {
         router.push('/company/dashboard');
+      } else if (user.role === 'UNIVERSITY') {
+        router.push('/university/dashboard');
       } else {
         router.push('/admin/dashboard');
       }

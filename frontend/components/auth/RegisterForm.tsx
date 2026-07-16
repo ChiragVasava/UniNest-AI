@@ -12,7 +12,9 @@ export function RegisterForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [role, setRole] = useState<'STUDENT' | 'COMPANY'>('STUDENT');
+  const [role, setRole] = useState<'STUDENT' | 'COMPANY' | 'UNIVERSITY'>('STUDENT');
+  const [universityName, setUniversityName] = useState('');
+  const [universityCode, setUniversityCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -34,7 +36,9 @@ export function RegisterForm() {
         email,
         password,
         confirmPassword,
-        role
+        role,
+        role === 'UNIVERSITY' ? universityName : undefined,
+        role === 'UNIVERSITY' ? universityCode : undefined
       );
 
       // Redirect to login after successful registration
@@ -81,14 +85,47 @@ export function RegisterForm() {
           <select
             value={role}
             onChange={(e) =>
-              setRole(e.target.value as 'STUDENT' | 'COMPANY')
+              setRole(e.target.value as any)
             }
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="STUDENT">Student</option>
             <option value="COMPANY">Company</option>
+            <option value="UNIVERSITY">University</option>
           </select>
         </div>
+
+        {role === 'UNIVERSITY' && (
+          <>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                University Name
+              </label>
+              <input
+                type="text"
+                value={universityName}
+                onChange={(e) => setUniversityName(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter university name"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                University Code (Unique Abbreviation)
+              </label>
+              <input
+                type="text"
+                value={universityCode}
+                onChange={(e) => setUniversityCode(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g. MSU, IITB"
+                required
+              />
+            </div>
+          </>
+        )}
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
