@@ -5,6 +5,7 @@ import {
   isValidCGPA,
   isValidBatch,
 } from "../utils/validators";
+import { prisma } from "../config/database";
 import { AppError } from "../middleware/errorHandler";
 
 /**
@@ -187,6 +188,7 @@ export const updateStudentProfile = async (
   payload: Partial<{
     firstName: string;
     lastName: string;
+    rollNumber: string | null;
     phone: string;
     cgpa: number;
     department: string;
@@ -207,6 +209,21 @@ export const updateStudentProfile = async (
   }
 
   // Validate fields if provided
+  if (payload.rollNumber) {
+    if (!isValidRollNumber(payload.rollNumber)) {
+      throw new AppError(400, "Invalid roll number or PRN format");
+    }
+    const existingWithRoll = await prisma.student.findFirst({
+      where: {
+        rollNumber: payload.rollNumber,
+        id: { not: studentId }
+      }
+    });
+    if (existingWithRoll) {
+      throw new AppError(400, "Roll number is already in use by another student");
+    }
+  }
+
   if (payload.phone && !isValidPhone(payload.phone)) {
     throw new AppError(400, "Phone number must be 10 digits");
   }
@@ -223,6 +240,7 @@ export const updateStudentProfile = async (
   const updateData = {
     firstName: payload.firstName,
     lastName: payload.lastName,
+    rollNumber: payload.rollNumber !== undefined ? payload.rollNumber : undefined,
     phone: payload.phone,
     cgpa: payload.cgpa,
     department: payload.department,

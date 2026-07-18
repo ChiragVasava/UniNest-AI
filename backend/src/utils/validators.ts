@@ -39,9 +39,10 @@ export const isValidPhone = (phone: string): boolean => {
  * @returns true if valid, false otherwise
  */
 export const isValidRollNumber = (rollNumber: string): boolean => {
-  // Example: BT20CSE001, 20CSE001, etc.
+  // Example: BT20CSE001, 20CSE001, etc. or numeric PRN like 8024058198
   const rollRegex = /^[A-Z]{0,2}\d{2}[A-Z]{2,3}\d{3,4}$/;
-  return rollRegex.test(rollNumber.toUpperCase());
+  const numericRegex = /^\d+$/;
+  return rollRegex.test(rollNumber.toUpperCase()) || numericRegex.test(rollNumber);
 };
 
 /**

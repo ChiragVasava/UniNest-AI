@@ -49,7 +49,7 @@ model Student {
   // Profile info
   firstName     String?
   lastName      String?
-  rollNumber    String   @unique // must be unique
+  rollNumber    String?  @unique // must be unique
   phone         String?
   profilePhoto  String?
   

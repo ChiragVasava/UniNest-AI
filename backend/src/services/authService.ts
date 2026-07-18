@@ -5,7 +5,6 @@ import { prisma } from "../config/database";
 import { hashPassword, comparePassword } from "../utils/encryption";
 import { generateToken } from "../utils/jwt";
 import { isValidEmail, isValidPassword } from "../utils/validators";
-import { generateStudentRollNumber } from "../utils/rollNumber";
 import { AppError } from "../middleware/errorHandler";
 import { User, UserRole } from "@prisma/client";
 
@@ -73,11 +72,10 @@ export const register = async (
   // Create linked profile row depending on role so other APIs can rely on it.
   try {
     if (role === UserRole.STUDENT) {
-      const rollNumber = generateStudentRollNumber(user.id);
       await studentRepo.createStudent(user.id, {
         firstName: "",
         lastName: "",
-        rollNumber,
+        rollNumber: null,
         phone: "",
         department: "CSE",
         batch: new Date().getFullYear(),

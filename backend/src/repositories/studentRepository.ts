@@ -17,7 +17,7 @@ export const createStudent = async (
   data: {
     firstName: string;
     lastName: string;
-    rollNumber: string;
+    rollNumber?: string | null;
     phone: string;
     department: string;
     batch: number;
@@ -30,7 +30,7 @@ export const createStudent = async (
       userId,
       firstName: data.firstName,
       lastName: data.lastName,
-      rollNumber: data.rollNumber,
+      rollNumber: data.rollNumber || null,
       phone: data.phone,
       department: data.department,
       batch: data.batch,
@@ -149,6 +149,7 @@ export const updateStudent = async (
   data: Partial<{
     firstName: string;
     lastName: string;
+    rollNumber: string | null;
     phone: string;
     cgpa: number;
     department: string;

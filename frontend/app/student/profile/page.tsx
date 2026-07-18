@@ -195,6 +195,7 @@ export default function StudentProfilePage() {
       const updatePayload = {
         firstName: formData.firstName,
         lastName: formData.lastName,
+        rollNumber: formData.rollNumber,
         phone: formData.phone,
         department: formData.department,
         batch: formData.batch,
@@ -411,15 +412,14 @@ export default function StudentProfilePage() {
                       label="Roll Number"
                       required
                       error={validationErrors.rollNumber}
-                      hint="Format: BTYYCSE###"
+                      hint="Format: BTYYCSE### or Numeric PRN"
                     >
                       <Input
                         name="rollNumber"
                         value={formData.rollNumber}
                         onChange={handleChange}
-                        placeholder="BTYYCSE###"
+                        placeholder="BT20CSE001 or 10-digit PRN"
                         error={!!validationErrors.rollNumber}
-                        disabled={!!student}
                       />
                     </FormField>
                     <FormField

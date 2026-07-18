@@ -24,7 +24,7 @@ async function main() {
         },
       });
       console.log('Created student for', u.email);
-    } else if (isLegacyRollNumber(existing.rollNumber)) {
+    } else if (existing.rollNumber && isLegacyRollNumber(existing.rollNumber)) {
       const roll = generateStudentRollNumber(u.id + existing.rollNumber);
       await prisma.student.update({
         where: { id: existing.id },
