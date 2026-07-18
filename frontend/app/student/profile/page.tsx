@@ -123,8 +123,12 @@ export default function StudentProfilePage() {
     if (!formData.lastName.trim()) errors.lastName = 'Last name is required';
     if (!formData.rollNumber.trim()) {
       errors.rollNumber = 'Roll number is required';
-    } else if (!/^BT\d{2}[A-Z]{3}\d{3}$/.test(formData.rollNumber)) {
-      errors.rollNumber = 'Invalid roll number format. Use BTYYCSE###';
+    } else {
+      const rollRegex = /^[A-Za-z]{0,2}\d{2}[A-Za-z]{2,3}\d{3,4}$/;
+      const numericRegex = /^\d+$/;
+      if (!rollRegex.test(formData.rollNumber) && !numericRegex.test(formData.rollNumber)) {
+        errors.rollNumber = 'Invalid roll number format. Use BTYYCSE### or numeric PRN.';
+      }
     }
 
     if (!formData.phone.trim()) {
