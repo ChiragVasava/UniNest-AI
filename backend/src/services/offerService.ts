@@ -438,7 +438,8 @@ export const rejectOffer = async (offerId: string, studentUserId: string) => {
 export const counterOffer = async (
   offerId: string,
   studentUserId: string,
-  counterOfferText: string
+  counterOfferText: string,
+  counterSalary?: number
 ) => {
   if (!counterOfferText || counterOfferText.trim().length === 0) {
     throw new AppError(400, "Counter offer text is required");
@@ -446,6 +447,10 @@ export const counterOffer = async (
 
   if (counterOfferText.length > 500) {
     throw new AppError(400, "Counter offer text cannot exceed 500 characters");
+  }
+
+  if (counterSalary !== undefined && counterSalary <= 0) {
+    throw new AppError(400, "Counter salary must be a positive number");
   }
 
   const student = await studentRepository.getStudentByUserId(studentUserId);
@@ -471,7 +476,8 @@ export const counterOffer = async (
   const updatedOffer = await offerRepository.updateOfferStatus(
     offerId,
     OfferStatus.COUNTERED,
-    counterOfferText
+    counterOfferText,
+    counterSalary
   );
 
   await addOfferAudit(
@@ -479,13 +485,14 @@ export const counterOffer = async (
     OfferAuditAction.COUNTERED,
     studentUserId,
     "Candidate submitted counter offer",
-    { counterOfferText }
+    { counterOfferText, counterSalary: counterSalary ?? null }
   );
 
   return {
     id: updatedOffer.id,
     status: updatedOffer.status,
     counterOfferText: updatedOffer.counterOfferText,
+    counterSalary: (updatedOffer as any).counterSalary ?? null,
     message: "Counter offer submitted successfully",
   };
 };
@@ -523,7 +530,9 @@ export const respondToCounterOffer = async (
     throw new AppError(400, "decision must be ACCEPT or REJECT");
   }
 
-  const nextStatus = normalized === "ACCEPT" ? OfferStatus.PENDING : OfferStatus.REJECTED;
+  // ACCEPT → move to ACCEPTED (salary gets promoted from counterSalary in the repository)
+  // REJECT → move to REJECTED
+  const nextStatus = normalized === "ACCEPT" ? OfferStatus.ACCEPTED : OfferStatus.REJECTED;
   const updated = await offerRepository.updateOfferStatus(offerId, nextStatus);
 
   await addOfferAudit(
@@ -531,7 +540,7 @@ export const respondToCounterOffer = async (
     OfferAuditAction.COUNTER_RESPONSE,
     companyUserId,
     normalized === "ACCEPT"
-      ? "Company accepted counter proposal and reverted offer to pending"
+      ? "Company accepted counter proposal — offer salary updated to counter amount"
       : "Company rejected counter proposal",
     {
       decision: normalized,
@@ -542,9 +551,10 @@ export const respondToCounterOffer = async (
   return {
     id: updated.id,
     status: updated.status,
+    salary: (updated as any).salary,
     message:
       normalized === "ACCEPT"
-        ? "Counter offer accepted. Waiting for student final decision."
+        ? "Counter offer accepted. Offer salary updated to the negotiated amount."
         : "Counter offer rejected.",
   };
 };

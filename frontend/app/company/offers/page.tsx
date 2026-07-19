@@ -32,6 +32,7 @@ interface DriveOffer {
   joinDate?: string;
   expiresAt?: string;
   counterOfferText?: string;
+  counterSalary?: number;         // student's proposed salary
   offerDetails?: Record<string, unknown>;
   student: {
     id: string;
@@ -302,28 +303,42 @@ export default function CompanyOffersPage() {
                       >
                         🤖 AI Offer Email
                       </button>
-                      {existingOffer.counterOfferText && (
-                        <p className="text-xs text-amber-700 max-w-xs">Counter: {existingOffer.counterOfferText}</p>
-                      )}
+                      {/* Counter offer section */}
                       {existingOffer.status === 'COUNTERED' && (
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="success"
-                            isLoading={respondingOfferId === existingOffer.id}
-                            onClick={() => respondToCounter(existingOffer.id, 'ACCEPT')}
-                          >
-                            Accept Counter
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="danger"
-                            isLoading={respondingOfferId === existingOffer.id}
-                            onClick={() => respondToCounter(existingOffer.id, 'REJECT')}
-                          >
-                            Reject Counter
-                          </Button>
+                        <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded-lg text-right">
+                          {existingOffer.counterSalary != null && (
+                            <p className="text-sm font-bold text-amber-800">
+                              Counter Salary: ₹{existingOffer.counterSalary.toLocaleString()} LPA
+                              <span className="text-xs font-normal text-amber-600 ml-1">
+                                (original: ₹{existingOffer.salary.toLocaleString()})
+                              </span>
+                            </p>
+                          )}
+                          {existingOffer.counterOfferText && (
+                            <p className="text-xs text-amber-700 max-w-xs mt-1">"{existingOffer.counterOfferText}"</p>
+                          )}
+                          <div className="flex gap-2 justify-end mt-2">
+                            <Button
+                              size="sm"
+                              variant="success"
+                              isLoading={respondingOfferId === existingOffer.id}
+                              onClick={() => respondToCounter(existingOffer.id, 'ACCEPT')}
+                            >
+                              Accept Counter
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="danger"
+                              isLoading={respondingOfferId === existingOffer.id}
+                              onClick={() => respondToCounter(existingOffer.id, 'REJECT')}
+                            >
+                              Reject Counter
+                            </Button>
+                          </div>
                         </div>
+                      )}
+                      {existingOffer.counterOfferText && existingOffer.status !== 'COUNTERED' && (
+                        <p className="text-xs text-amber-700 max-w-xs">Counter: {existingOffer.counterOfferText}</p>
                       )}
                     </div>
                   ) : (

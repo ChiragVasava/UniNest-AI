@@ -235,13 +235,15 @@ export const counterOffer = async (
       throw new AppError(401, "Student ID not found. Please register as a student.");
     }
 
-    const { counterOfferText } = req.body;
+    const { counterOfferText, counterSalary } = req.body;
 
     if (!counterOfferText) {
       throw new AppError(400, "counterOfferText is required");
     }
 
-    const offer = await offerService.counterOffer(id, studentId, counterOfferText);
+    const parsedSalary = counterSalary !== undefined ? parseFloat(counterSalary) : undefined;
+
+    const offer = await offerService.counterOffer(id, studentId, counterOfferText, parsedSalary);
 
     _res.status(200).json({
       status: "success",

@@ -245,7 +245,8 @@ model Offer {
   
   // Status tracking
   status      OfferStatus @default(PENDING)
-  counterOfferText String?
+  counterOfferText String?   // Student's negotiation message
+  counterSalary    Float?    // Student's proposed salary (counter amount)
   expiresAt   DateTime?
   auditTrail  OfferAudit[]
   

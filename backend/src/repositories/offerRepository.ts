@@ -190,14 +190,40 @@ export const getAllOffers = async (filters?: {
 export const updateOfferStatus = async (
   offerId: string,
   status: OfferStatus,
-  counterOfferText?: string
+  counterOfferText?: string,
+  counterSalary?: number
 ): Promise<Offer> => {
+  // Build update payload
+  const updateData: Record<string, unknown> = { status };
+
+  if (status === OfferStatus.COUNTERED) {
+    updateData.counterOfferText = counterOfferText ?? null;
+    if (counterSalary !== undefined) {
+      updateData.counterSalary = counterSalary;
+    }
+  } else if (status === OfferStatus.ACCEPTED) {
+    // When company accepts the counter, promote the counter salary to the main salary
+    const existing = await prisma.offer.findUnique({
+      where: { id: offerId },
+      select: { counterSalary: true },
+    });
+    if (existing?.counterSalary) {
+      updateData.salary = existing.counterSalary;
+    }
+    updateData.counterOfferText = null;
+    updateData.counterSalary = null;
+  } else {
+    // PENDING (company accepted counter to re-negotiate) or REJECTED — preserve text for audit
+    // but clear counter fields on REJECTED
+    if (status === OfferStatus.REJECTED) {
+      updateData.counterOfferText = null;
+      updateData.counterSalary = null;
+    }
+  }
+
   return await prisma.offer.update({
     where: { id: offerId },
-    data: {
-      status,
-      counterOfferText: status === OfferStatus.COUNTERED ? counterOfferText : null,
-    },
+    data: updateData,
     include: {
       student: {
         select: {

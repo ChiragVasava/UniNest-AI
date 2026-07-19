@@ -157,8 +157,8 @@ export const offerAPI = {
     api.get(`/offers/accepted?limit=${limit}&offset=${offset}`),
   accept: (id: string) => api.post(`/offers/${id}/accept`),
   reject: (id: string) => api.post(`/offers/${id}/reject`),
-  counter: (id: string, counterOfferText: string) =>
-    api.post(`/offers/${id}/counter`, { counterOfferText }),
+  counter: (id: string, counterOfferText: string, counterSalary?: number) =>
+    api.post(`/offers/${id}/counter`, { counterOfferText, counterSalary }),
   respondToCounter: (id: string, decision: 'ACCEPT' | 'REJECT', note?: string) =>
     api.post(`/offers/${id}/counter/respond`, { decision, note }),
   getAuditTrail: (id: string) => api.get(`/offers/${id}/audit`),
