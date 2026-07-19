@@ -1,6 +1,23 @@
 import { Request, Response, NextFunction } from "express";
 import * as resumeService from "../services/resumeService";
 import { AppError } from "../middleware/errorHandler";
+import { resumeUploadDir } from "../middleware/resumeUpload";
+import pdfParse from "pdf-parse";
+import fs from "fs";
+import path from "path";
+
+/**
+ * Helper — silently extract text from an uploaded PDF buffer.
+ * Returns an empty string on failure so the upload still succeeds.
+ */
+async function extractPdfText(buffer: Buffer): Promise<string> {
+  try {
+    const parsed = await pdfParse(buffer);
+    return typeof parsed.text === "string" ? parsed.text.trim() : "";
+  } catch {
+    return "";
+  }
+}
 
 /**
  * Upload resume (Student only)
@@ -18,28 +35,43 @@ export const uploadResume = async (
     }
 
     const uploadedFile = req.file;
-    const extractedText = req.body?.extractedText;
+
+    // Auto-extract PDF text from the uploaded buffer (server-side)
+    let extractedText: string = req.body?.extractedText || "";
+    if (!extractedText && uploadedFile?.buffer) {
+      extractedText = await extractPdfText(uploadedFile.buffer);
+    }
 
     const fileName = uploadedFile?.originalname || req.body?.fileName;
-    const filePath = uploadedFile
-      ? `/uploads/resumes/${uploadedFile.filename}`
-      : req.body?.filePath;
     const fileSize = uploadedFile?.size || req.body?.fileSize;
 
     const missing: string[] = [];
     if (!fileName) missing.push('fileName');
-    if (!filePath) missing.push('filePath');
     if (!fileSize) missing.push('fileSize');
+    if (!uploadedFile?.buffer && !req.body?.filePath) missing.push('filePath');
 
     if (missing.length > 0) {
       throw new AppError(400, `Missing required resume fields: ${missing.join(', ')}`);
+    }
+
+    // Write the in-memory buffer to disk and build the file path
+    let filePath: string = req.body?.filePath || "";
+    if (uploadedFile?.buffer) {
+      if (!fs.existsSync(resumeUploadDir)) {
+        fs.mkdirSync(resumeUploadDir, { recursive: true });
+      }
+      const safeOriginalName = (uploadedFile.originalname || "resume.pdf").replace(/\s+/g, "-");
+      const uniqueName = `${Date.now()}-${safeOriginalName}`;
+      const absolutePath = path.join(resumeUploadDir, uniqueName);
+      fs.writeFileSync(absolutePath, uploadedFile.buffer);
+      filePath = `/uploads/resumes/${uniqueName}`;
     }
 
     const resume = await resumeService.uploadResume(studentId, {
       fileName,
       filePath,
       fileSize,
-      extractedText,
+      extractedText: extractedText || undefined,
     });
 
     _res.status(201).json({
@@ -52,6 +84,7 @@ export const uploadResume = async (
     next(error);
   }
 };
+
 
 /**
  * Get resume by ID

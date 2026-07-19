@@ -1,5 +1,4 @@
 import multer from "multer";
-import fs from "fs";
 import os from "os";
 import path from "path";
 
@@ -18,22 +17,8 @@ const resolveUploadBaseDir = () => {
   return path.join(process.cwd(), "uploads");
 };
 
-const resumeUploadDir = path.join(resolveUploadBaseDir(), "resumes");
-
-if (!fs.existsSync(resumeUploadDir)) {
-  fs.mkdirSync(resumeUploadDir, { recursive: true });
-}
-
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => {
-    cb(null, resumeUploadDir);
-  },
-  filename: (_req, file, cb) => {
-    const safeOriginalName = file.originalname.replace(/\s+/g, "-");
-    const uniqueName = `${Date.now()}-${safeOriginalName}`;
-    cb(null, uniqueName);
-  },
-});
+// Export so the controller can write the file to disk after text extraction
+export const resumeUploadDir = path.join(resolveUploadBaseDir(), "resumes");
 
 const pdfFileFilter: multer.Options["fileFilter"] = (_req, file, cb) => {
   const isPdfMime = file.mimetype === "application/pdf";
@@ -47,10 +32,11 @@ const pdfFileFilter: multer.Options["fileFilter"] = (_req, file, cb) => {
   cb(null, true);
 };
 
+// Use memoryStorage so req.file.buffer is available for PDF text extraction
 export const resumeUpload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: {
-    fileSize: 5 * 1024 * 1024,
+    fileSize: 5 * 1024 * 1024, // 5 MB
   },
   fileFilter: pdfFileFilter,
 });
