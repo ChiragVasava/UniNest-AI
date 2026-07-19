@@ -40,7 +40,7 @@ export type ResumePreviewInput = {
   resumeFilePath?: string;
 };
 
-const GEMINI_MODEL = "gemini-1.5-flash";
+const GEMINI_MODEL = "gemini-2.0-flash";
 
 function clampScore(value: number) {
   if (Number.isNaN(value)) return 0;
