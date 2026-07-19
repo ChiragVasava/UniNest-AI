@@ -547,3 +547,34 @@ export const approveDrive = async (req: Request, res: Response, next: NextFuncti
     next(error);
   }
 };
+
+export const rejectDrive = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const userId = (req as any).userId;
+    const role = (req as any).userRole;
+    const uniId = await getUniversityId(userId, role);
+
+    const { id } = req.params;
+
+    const drive = await prisma.drive.findFirst({
+      where: { id, universityId: uniId },
+    });
+
+    if (!drive) {
+      throw new AppError(404, "Drive request not found under your university");
+    }
+
+    const rejected = await prisma.drive.update({
+      where: { id },
+      data: { isApproved: false, isActive: false },
+    });
+
+    res.status(200).json({
+      success: true,
+      data: rejected,
+      message: "Drive request rejected. It will not be visible to students.",
+    });
+  } catch (error) {
+    next(error);
+  }
+};

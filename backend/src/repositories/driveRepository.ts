@@ -6,6 +6,7 @@ import { Drive } from "@prisma/client";
  */
 export const createDrive = async (data: {
   companyId: string;
+  universityId?: string;
   title: string;
   description?: string;
   jobDescription?: string;
@@ -19,6 +20,8 @@ export const createDrive = async (data: {
   return await prisma.drive.create({
     data: {
       companyId: data.companyId,
+      // Link to university if provided — drive stays pending approval
+      ...(data.universityId && { universityId: data.universityId }),
       title: data.title,
       description: data.description,
       jobDescription: data.jobDescription,
@@ -29,6 +32,8 @@ export const createDrive = async (data: {
       requiredSkills: data.requiredSkills || [],
       interviewFormat: data.interviewFormat || "Online",
       isActive: true,
+      // Always starts as pending — university must explicitly approve
+      isApproved: false,
     },
     include: {
       company: {
@@ -101,8 +106,9 @@ export const getAllActiveDrives = async (filters?: {
   limit?: number;
   offset?: number;
 }): Promise<{ count: number; drives: Drive[] }> => {
+  const where = { isActive: true, isApproved: true };
   const drives = await prisma.drive.findMany({
-    where: { isActive: true },
+    where,
     take: filters?.limit || 100,
     skip: filters?.offset || 0,
     orderBy: { createdAt: "desc" },
@@ -125,7 +131,7 @@ export const getAllActiveDrives = async (filters?: {
   });
 
   return {
-    count: await prisma.drive.count({ where: { isActive: true } }),
+    count: await prisma.drive.count({ where }),
     drives,
   };
 };
@@ -142,6 +148,7 @@ export const getEligibleDrivesForStudent = async (
   return await prisma.drive.findMany({
     where: {
       isActive: true,
+      isApproved: true,   // ← only show university-approved drives to students
       cgpaCutoff: { lte: cgpa },
       eligibleDepartments: { has: department },
       eligibleBatches: { has: batch },

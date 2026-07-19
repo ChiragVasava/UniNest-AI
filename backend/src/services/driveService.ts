@@ -18,6 +18,7 @@ export const createDrive = async (
     eligibleBatches?: number[];
     requiredSkills?: string[];
     interviewFormat?: string;
+    universityId?: string;   // optional — links drive to a university for approval
   }
 ) => {
   // Validate company exists for this user
@@ -70,6 +71,7 @@ export const createDrive = async (
 
   const drive = await driveRepository.createDrive({
     companyId,
+    universityId: payload.universityId,
     title: payload.title,
     description: payload.description,
     jobDescription: payload.jobDescription,

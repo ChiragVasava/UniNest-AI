@@ -33,5 +33,6 @@ router.get("/sub-departments/:id/classes", authMiddleware, universityController.
 router.post("/companies/invite", authMiddleware, universityController.inviteCompany);
 router.get("/drives/requests", authMiddleware, universityController.getDriveRequests);
 router.post("/drives/:id/approve", authMiddleware, universityController.approveDrive);
+router.post("/drives/:id/reject", authMiddleware, universityController.rejectDrive);
 
 export default router;

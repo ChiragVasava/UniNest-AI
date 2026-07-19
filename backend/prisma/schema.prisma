@@ -160,7 +160,7 @@ model Drive {
   // University routing for approvals
   universityId  String?
   university    University? @relation(fields: [universityId], references: [id], onDelete: SetNull)
-  isApproved    Boolean     @default(true) // True for directly created drives, false for company requests awaiting approval
+  isApproved    Boolean     @default(false) 
   
   // Drive info
   title       String   // Job title/role
