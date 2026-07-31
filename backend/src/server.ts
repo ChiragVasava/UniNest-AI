@@ -19,25 +19,32 @@ dotenv.config();
 // Initialize Express app
 const app: Express = express();
 
-// Allowed origins — local dev + all Vercel deployments
+// Allowed origins — local dev + Vercel previews + custom domain
 const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:3001",
-  process.env.FRONTEND_URL,
-  "https://uninest-mu.vercel.app",
+  process.env.FRONTEND_URL,             // override via .env if needed
+  "https://uninest-mu.vercel.app",      // old Vercel URL (keep for safety)
+  "https://uninest.chiragvasava.me",    // ← new custom domain (frontend)
+  "https://chiragvasava.me",            // ← root domain
 ].filter(Boolean) as string[];
 
 const corsOptions = {
   origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
     // Allow requests with no origin (e.g. curl, Postman, server-to-server)
     if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
-      return callback(null, true);
-    }
+
+    const allowed =
+      allowedOrigins.includes(origin) ||
+      origin.endsWith(".vercel.app") ||        // Vercel preview deployments
+      origin.endsWith(".chiragvasava.me");     // any subdomain of your domain
+
+    if (allowed) return callback(null, true);
     return callback(new Error(`CORS: origin ${origin} not allowed`));
   },
   credentials: true,
 };
+
 
 // Middleware
 app.use(cors(corsOptions));
