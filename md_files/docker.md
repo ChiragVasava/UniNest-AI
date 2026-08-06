@@ -32,6 +32,7 @@
    - [Session 10 — Phase 4: Redis Infrastructure Integration & Terminal Log Evidence](#session-10--phase-4-redis-infrastructure-integration--terminal-log-evidence)
    - [Session 11 — Phase 5: OTP Verification Cache using Redis](#session-11--phase-5-otp-verification-cache-using-redis)
    - [Session 12 — Phase 5 Execution & Live Terminal Container Verification](#session-12--phase-5-execution--live-terminal-container-verification)
+   - [Session 13 — Phase 6: JWT Blacklisting using Redis (Security Architecture)](#session-13--phase-6-jwt-blacklisting-using-redis-security-architecture)
 3. [Part 3: Complete Technical Reference & Artifacts](#part-3-complete-technical-reference--artifacts)
    - [3.1 Multi-Stage Dockerfile (`backend/Dockerfile`)](#31-multi-stage-dockerfile-backenddockerfile)
    - [3.2 Docker Compose (`docker-compose.yml`)](#32-docker-compose-docker-composeyml)
@@ -402,6 +403,21 @@ uninest-backend  | ------------------------------------------
 2. Verified Redis payload `otp:<userId>` containing `{"emailOtp":"139506","phoneOtp":"597450"}` with 600-second TTL.
 3. Prepared structured completion summary for ChatGPT handoff.
 4. Pushed updated master log to GitHub.
+
+---
+
+## Session 13 — Phase 6: JWT Blacklisting using Redis (Security Architecture)
+
+### 💬 User Instruction
+> *"Phase 6 — JWT Blacklisting using Redis (Security Architecture). Step 1 Analysis (JWT generation, payload fields, expiration time, auth middleware flow, protected routes, logout mechanism, jti presence, raw vs hash blacklisting, recommended architecture). Step 2 Implementation (Blacklist JWTs on logout, store in Redis `blacklist:<token_hash>` with TTL equal to remaining lifetime, update authMiddleware to check Redis before continuing, return HTTP 401 Unauthorized if blacklisted). Step 3 Explanation (Modifications, Redis commands, TTL calculation, security & performance benefits). Step 4 Verification (Step-by-step testing plan, login, access route, logout, check Redis, attempt request with same token, expected 401, automatic TTL cleanup). Finish with 'Implementation Complete — Awaiting Manual Verification'."*
+
+### ⚙️ Actions Performed by AI
+1. Conducted security architecture audit of token generation and middleware pipeline.
+2. Added `hashToken` (SHA-256) and `getTokenRemainingTTL` helpers to `backend/src/utils/jwt.ts`.
+3. Updated `backend/src/middleware/authMiddleware.ts` to perform async Redis lookup `blacklist:<tokenHash>` on every request. Returns 401 if revoked.
+4. Created `logout` handler in `backend/src/controllers/authController.ts` storing `blacklist:<tokenHash>` in Redis with exact remaining TTL via `redis.setex`.
+5. Registered `POST /api/v1/auth/logout` in `backend/src/routes/authRoutes.ts`.
+6. Rebuilt containers (`docker compose up --build -d`) and verified 100% build & startup success.
 
 ---
 
