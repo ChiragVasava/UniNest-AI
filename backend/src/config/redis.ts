@@ -23,7 +23,7 @@ export const redis =
     lazyConnect: true, // Connect manually during app startup in server.ts
     maxRetriesPerRequest: 3,
     enableReadyCheck: true,
-    retryStrategy(times) {
+    retryStrategy(times: number) {
       const delay = Math.min(times * 100, 3000);
       console.warn(`[Redis] Connection attempt #${times} failed. Reconnecting in ${delay}ms...`);
       return delay;
@@ -45,7 +45,7 @@ redis.on("ready", () => {
   console.log(`[Redis] Server is ready to accept commands ✅ (${REDIS_HOST}:${REDIS_PORT})`);
 });
 
-redis.on("error", (err) => {
+redis.on("error", (err: Error) => {
   console.error(`[Redis] Connection Error: ${err.message}`);
 });
 

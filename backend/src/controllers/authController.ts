@@ -3,6 +3,7 @@ import * as authService from "../services/authService";
 import { AppError } from "../middleware/errorHandler";
 import { UserRole } from "@prisma/client";
 import { prisma } from "../config/database";
+import { redis } from "../config/redis";
 
 /**
  * Auth Controller - Request handlers for auth endpoints
@@ -155,14 +156,12 @@ export const sendOtp = async (
     // Generate random 6-digit OTPs
     const emailOtp = Math.floor(100000 + Math.random() * 900000).toString();
     const phoneOtp = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
 
-    // Save or update OTPVerification record
-    await prisma.oTPVerification.upsert({
-      where: { userId },
-      update: { emailOtp, phoneOtp, expiresAt, emailVerified: false, phoneVerified: false },
-      create: { userId, emailOtp, phoneOtp, expiresAt },
-    });
+    // Store OTP in Redis with 10-minute TTL (600 seconds)
+    // Key format: otp:userId
+    const otpKey = `otp:${userId}`;
+    const otpPayload = JSON.stringify({ emailOtp, phoneOtp });
+    await redis.setex(otpKey, 600, otpPayload);
 
     // Import email and SMS helpers dynamically or statically
     const { sendEmail, sendSMS } = require("../utils/notification");
@@ -208,19 +207,17 @@ export const verifyOtp = async (
       throw new AppError(400, "Both email and phone OTPs are required");
     }
 
-    const otpRecord = await prisma.oTPVerification.findUnique({
-      where: { userId },
-    });
+    // Retrieve OTP from Redis
+    const otpKey = `otp:${userId}`;
+    const rawData = await redis.get(otpKey);
 
-    if (!otpRecord) {
-      throw new AppError(400, "No pending OTP verification record found. Please request OTP first.");
+    if (!rawData) {
+      throw new AppError(400, "No pending OTP verification found or OTP has expired. Please request a new OTP.");
     }
 
-    if (new Date() > otpRecord.expiresAt) {
-      throw new AppError(400, "OTPs have expired. Please request new ones.");
-    }
+    const storedOtp = JSON.parse(rawData);
 
-    if (otpRecord.emailOtp !== emailOtp || otpRecord.phoneOtp !== phoneOtp) {
+    if (storedOtp.emailOtp !== emailOtp || storedOtp.phoneOtp !== phoneOtp) {
       throw new AppError(400, "Invalid email or phone OTP. Please try again.");
     }
 
@@ -242,10 +239,8 @@ export const verifyOtp = async (
       },
     });
 
-    // Delete the OTP record since it's verified
-    await prisma.oTPVerification.delete({
-      where: { userId },
-    });
+    // Delete the OTP record from Redis immediately after successful verification
+    await redis.del(otpKey);
 
     const { sendEmail } = require("../utils/notification");
     // Send welcome mail
