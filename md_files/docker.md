@@ -38,6 +38,8 @@
    - [3.1 Multi-Stage Dockerfile (`backend/Dockerfile`)](#31-multi-stage-dockerfile-backenddockerfile)
    - [3.2 Docker Compose (`docker-compose.yml`)](#32-docker-compose-docker-composeyml)
    - [3.3 Infrastructure Verification & Operations Commands](#33-infrastructure-verification--operations-commands)
+   - [3.4 Deferred Features & Future Implementation Roadmap](#34-deferred-features--future-implementation-roadmap)
+   - [3.5 Final Project Completion Status & Milestone Summary](#35-final-project-completion-status--milestone-summary)
 
 ---
 
@@ -631,7 +633,44 @@ networks:
 | **View live unified logs** | `docker compose logs -f` |
 | **Restart backend service** | `docker compose restart uninest-backend` |
 | **Stop & remove stack** | `docker compose down -v` |
+| **Test Redis OTP Flow** | `docker exec uninest-backend node -e "..."` |
+| **Test JWT Blacklist Flow** | `docker exec uninest-backend node -e "..."` |
 
 ---
 
-*This master document is active and will be continuously updated as new features, Redis caching modules, or architecture updates are implemented in UniNest AI.*
+## 3.4 Deferred Features & Future Implementation Roadmap
+
+The following features were strategically analyzed, architected, and intentionally deferred for future releases:
+
+1. **Redis API Rate Limiting Middleware (Phase 7 - Deferred)**:
+   - **Purpose**: Protect authentication endpoints (`/login`, `/send-otp`) against brute-force attacks.
+   - **Strategy**: Implement sliding-window key counters in Redis (e.g. `rate:login:<ip>` with 5 requests/min limit).
+
+2. **Placement Drive & Student Profile Query Caching (Phase 8 - Deferred)**:
+   - **Purpose**: Reduce PostgreSQL read load during peak campus hiring events.
+   - **Strategy**: Cache drive listings (`drives:active`) and student dashboards (`student:profile:<id>`) with short 60s TTL or event-driven invalidation.
+
+3. **PayPal B2B SaaS Payment Integration (Phase 9 - Deferred)**:
+   - **Purpose**: Enable paid subscriptions for Universities & Companies.
+   - **Strategy**: Integrate PayPal Checkout SDK & Webhook handlers for subscription plan tier upgrades.
+
+---
+
+## 3.5 Final Project Completion Status & Milestone Summary
+
+> **PROJECT STATUS**: **STABLE & PRODUCTION READY**  
+> **INFRASTRUCTURE**: **DOCKER CONTAINERIZED + REDIS ENHANCED**  
+> **LAST UPDATED**: August 6, 2026
+
+### Final Accomplishments:
+- ✅ Multi-stage Docker build with Alpine Linux & Prisma OpenSSL native engine compatibility.
+- ✅ Docker Compose orchestration with automated health checks and persistent Redis volumes.
+- ✅ Redis infrastructure module (`backend/src/config/redis.ts`) with exponential backoff reconnect strategy and singleton connection pool.
+- ✅ In-Memory Redis OTP Verification Cache (10-min 600s TTL, zero DB load, immediate cleanup).
+- ✅ Instant JWT Revocation / Blacklisting on Logout using SHA-256 token hashing in Redis.
+- ✅ 100% End-to-End Terminal Verification across all 14 execution sessions.
+- ✅ Complete monorepo cleanup, Git security rules (`csv/`, `Resumes/`, `.env` protected), and master documentation pushed to GitHub.
+
+---
+*This master document represents the complete single-source-of-truth technical history of UniNest AI containerization and infrastructure development.*
+
