@@ -33,6 +33,7 @@
    - [Session 11 — Phase 5: OTP Verification Cache using Redis](#session-11--phase-5-otp-verification-cache-using-redis)
    - [Session 12 — Phase 5 Execution & Live Terminal Container Verification](#session-12--phase-5-execution--live-terminal-container-verification)
    - [Session 13 — Phase 6: JWT Blacklisting using Redis (Security Architecture)](#session-13--phase-6-jwt-blacklisting-using-redis-security-architecture)
+   - [Session 14 — Phase 6 Execution & Live Container Verification Log](#session-14--phase-6-execution--live-container-verification-log)
 3. [Part 3: Complete Technical Reference & Artifacts](#part-3-complete-technical-reference--artifacts)
    - [3.1 Multi-Stage Dockerfile (`backend/Dockerfile`)](#31-multi-stage-dockerfile-backenddockerfile)
    - [3.2 Docker Compose (`docker-compose.yml`)](#32-docker-compose-docker-composeyml)
@@ -418,6 +419,52 @@ uninest-backend  | ------------------------------------------
 4. Created `logout` handler in `backend/src/controllers/authController.ts` storing `blacklist:<tokenHash>` in Redis with exact remaining TTL via `redis.setex`.
 5. Registered `POST /api/v1/auth/logout` in `backend/src/routes/authRoutes.ts`.
 6. Rebuilt containers (`docker compose up --build -d`) and verified 100% build & startup success.
+
+---
+
+## Session 14 — Phase 6 Execution & Live Container Verification Log
+
+### 💬 User Instruction
+> *"Verified real-time container output: Test 1 checking Redis before logout (PASS), Test 2 simulating logout & storing `blacklist:<hash>` in Redis with 3600s TTL (PASS), Test 3 checking remaining TTL countdown (PASS), Test 4 attempting API request after logout -> HTTP 401 Unauthorized (PASS). Verified student user details: id: cmshpiuik00048nmv6qctolsj, email: teststudent@gmail.com, role: STUDENT, verificationStatus: VERIFIED. What to do next? Add these token and details on docker.md."*
+
+### 🧪 Live Container Test & Verified Student Account Evidence
+```text
+==================================================
+🛡️  RUNNING JWT BLACKLISTING REAL-TIME TESTS
+==================================================
+
+1. Generated Test Token: eyJhbGciOiJIUzI1NiIsInR5cCI6Ik...
+   Token Hash (SHA-256): 43b6e29a9ac612bf5fd389d983ca2230...
+
+▶ TEST 1: Checking Redis before logout...
+   Redis blacklist status: VALID (Not blacklisted)
+   STATUS: PASS ✅
+
+▶ TEST 2: Simulating Logout (Blacklisting token with remaining TTL)...
+   Command: KEYS blacklist:*
+   Result:  [ 'blacklist:43b6e29a9ac612bf5fd389d983ca2230d520e9d4c53a82d0e054efd818fd1050' ]
+   STATUS: PASS ✅
+
+▶ TEST 3: Checking remaining TTL countdown...
+   Command: TTL blacklist:43b6e29a9ac612bf5fd389d983ca2230d520e9d4c53a82d0e054efd818fd1050
+   Result: (integer) 3600 seconds remaining
+   STATUS: PASS ✅
+
+▶ TEST 4: Attempting API request after logout...
+   Result: HTTP 401 Unauthorized — Token has been revoked/logged out.
+   STATUS: PASS ✅
+
+==================================================
+🎉 ALL JWT BLACKLISTING TESTS PASSED 100% PERFECTLY!
+==================================================
+```
+
+### 👤 Verified Student Payload Record
+- **User ID**: `cmshpiuik00048nmv6qctolsj`
+- **Email**: `teststudent@gmail.com`
+- **Role**: `STUDENT`
+- **Verification Status**: `VERIFIED`
+- **Active JWT Token Sample**: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNtc2hwaXVpazAwMDQ4bm12NnFjdG9sc2oiLCJlbWFpbCI6InRlc3RzdHVkZW50QGdtYWlsLmNvbSIsInJvbGUiOiJTVFVERU5UIiwiaWF0IjoxNzg2MDMyOTU1LCJleHAiOjE3ODY2Mzc3NTV9.QgHLVb9ybTwKo3T6oA0Kwm-hT9AQmJSYUdWXbfA9Tl4`
 
 ---
 
