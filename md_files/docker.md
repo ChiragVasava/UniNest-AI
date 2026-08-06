@@ -30,6 +30,7 @@
    - [Session 8 — Phase 3.5: Infrastructure Verification Test Plan](#session-8--phase-35-infrastructure-verification-test-plan)
    - [Session 9 — Master Documentation Structuring](#session-9--master-documentation-structuring)
    - [Session 10 — Phase 4: Redis Infrastructure Integration & Terminal Log Evidence](#session-10--phase-4-redis-infrastructure-integration--terminal-log-evidence)
+   - [Session 11 — Phase 5: OTP Verification Cache using Redis](#session-11--phase-5-otp-verification-cache-using-redis)
 3. [Part 3: Complete Technical Reference & Artifacts](#part-3-complete-technical-reference--artifacts)
    - [3.1 Multi-Stage Dockerfile (`backend/Dockerfile`)](#31-multi-stage-dockerfile-backenddockerfile)
    - [3.2 Docker Compose (`docker-compose.yml`)](#32-docker-compose-docker-composeyml)
@@ -357,6 +358,21 @@ PONG
    - Exported `initRedis()` startup ping handler and `closeRedis()` graceful shutdown handler.
 4. Updated `backend/src/server.ts` to initialize Redis on server startup and handle `SIGINT` / `SIGTERM` graceful shutdown signals.
 5. Cleaned up obsolete `version: '3.8'` line from `docker-compose.yml` per Docker Compose v2 standards.
+
+---
+
+## Session 11 — Phase 5: OTP Verification Cache using Redis
+
+### 💬 User Instruction
+> *"Must Not Do: i don't want to send otp's to students i have implemented in this web application so does doing this will have to send otp and emails to students i have implelmented in real life ? because students data are real so i dont want to send email and otp to everyone. Phase 5 — OTP Verification Cache using Redis. Replace ONLY the temporary OTP storage with Redis. Store OTPs in Redis using key format `otp:userId` with 10-minute TTL (600s). During verification: read from Redis, compare values, delete OTP immediately after verification. Expired OTPs disappear automatically without cleanup code. Explain every modification, Redis command, why Redis is better than PostgreSQL for OTP storage, database load reduction, testing steps, and interview questions."*
+
+### ⚙️ Actions Performed by AI
+1. Clarified security guarantee: **No bulk emails/SMS are ever sent**. OTPs are only sent on-demand when a user actively clicks "Send OTP" for their own logged-in account.
+2. Modified `backend/src/controllers/authController.ts`:
+   - Replaced `prisma.oTPVerification.upsert` with `redis.setex('otp:' + userId, 600, JSON.stringify({ emailOtp, phoneOtp }))`.
+   - Replaced `prisma.oTPVerification.findUnique` and manual `expiresAt` checks with `redis.get('otp:' + userId)`. (Expiration is automatic via 600s Redis TTL!).
+   - Replaced `prisma.oTPVerification.delete` with `redis.del('otp:' + userId)`.
+3. Verified zero application breakages and compiled TypeScript via `tsc`.
 
 ---
 
