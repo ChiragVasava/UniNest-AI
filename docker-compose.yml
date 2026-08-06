@@ -1,0 +1,64 @@
+services:
+  # ============================================================================
+  # 1. Redis Cache Service (In-Memory Data Store)
+  # ============================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: uninest-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - uninest-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  # ============================================================================
+  # 2. UniNest Express + TypeScript Backend API Service
+  # ============================================================================
+  uninest-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: uninest-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
+    environment:
+      - PORT=8000
+      - NODE_ENV=production
+      - REDIS_HOST=uninest-redis
+      - REDIS_PORT=6379
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - uninest-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8000/api/v1/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+# ==============================================================================
+# Persistent Volumes Definition
+# ==============================================================================
+volumes:
+  redis-data:
+    driver: local
+
+# ==============================================================================
+# Isolated Internal Docker Network Definition
+# ==============================================================================
+networks:
+  uninest-network:
+    driver: bridge

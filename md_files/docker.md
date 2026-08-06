@@ -29,6 +29,7 @@
    - [Session 7 — History Consolidation & Continuous Logging Rule](#session-7--history-consolidation--continuous-logging-rule)
    - [Session 8 — Phase 3.5: Infrastructure Verification Test Plan](#session-8--phase-35-infrastructure-verification-test-plan)
    - [Session 9 — Master Documentation Structuring](#session-9--master-documentation-structuring)
+   - [Session 10 — Phase 4: Redis Infrastructure Integration & Terminal Log Evidence](#session-10--phase-4-redis-infrastructure-integration--terminal-log-evidence)
 3. [Part 3: Complete Technical Reference & Artifacts](#part-3-complete-technical-reference--artifacts)
    - [3.1 Multi-Stage Dockerfile (`backend/Dockerfile`)](#31-multi-stage-dockerfile-backenddockerfile)
    - [3.2 Docker Compose (`docker-compose.yml`)](#32-docker-compose-docker-composeyml)
@@ -313,6 +314,48 @@ RUN apk add --no-cache openssl libc6-compat
 1. Consolidated the entire system architecture, tech stack evaluation, Docker/Redis strategy, and all 9 chronological session logs into a clean, structured master document (`md_files/docker.md`).
 2. Eliminated duplicates and aligned all sections under 3 master parts: Architecture Strategy, Chronological Session Execution Logs, and Technical Artifact References.
 3. Pushed updated master document to GitHub (`origin/main`).
+
+---
+
+## Session 10 — Phase 4: Redis Infrastructure Integration & Terminal Log Evidence
+
+### 💬 User Instruction
+> *"these are process we done in terminal add these in docker also: docker compose build, docker compose up -d (image redis:7-alpine pulled, network created, volume created, containers healthy), docker compose ps (uninest-backend healthy on 8000, uninest-redis healthy on 6379), curl.exe http://localhost:8000/api/v1/health (Backend is running), docker exec -it uninest-redis redis-cli ping (PONG). And implement ONLY Redis infrastructure inside the backend (install ioredis, create redis.ts config module, singleton client, automatic reconnect strategy, graceful shutdown, export initRedis & closeRedis, hooks in server.ts). Do NOT implement caching yet."*
+
+### 🧪 Terminal Execution Evidence (User Provided)
+```powershell
+PS> docker compose build
+# ... Layer caching verified, Dockerfile build succeeded
+
+PS> docker compose up -d
+ ✔ Image redis:7-alpine                    Pulled                                                           9.1s
+ ✔ Network uninest-ai-main_uninest-network Created                                                          0.1s
+ ✔ Volume uninest-ai-main_redis-data       Created                                                          0.0s
+ ✔ Container uninest-redis                 Healthy                                                          6.2s
+ ✔ Container uninest-backend               Started                                                          6.2s
+
+PS> docker compose ps
+NAME              IMAGE                             COMMAND                  SERVICE           CREATED         STATUS                   PORTS
+uninest-backend   uninest-ai-main-uninest-backend   "docker-entrypoint.s…"   uninest-backend   2 minutes ago   Up 2 minutes (healthy)   0.0.0.0:8000->8000/tcp, [::]:8000->8000/tcp
+uninest-redis     redis:7-alpine                    "docker-entrypoint.s…"   redis             2 minutes ago   Up 2 minutes (healthy)   0.0.0.0:6379->6379/tcp, [::]:6379->6379/tcp
+
+PS> curl.exe http://localhost:8000/api/v1/health
+{"success":true,"message":"Backend is running ✅"}
+
+PS> docker exec -it uninest-redis redis-cli ping
+PONG
+```
+
+### ⚙️ Actions Performed by AI
+1. Added `ioredis` (^5.4.1) & `@types/ioredis` to `backend/package.json`.
+2. Created reusable Redis infrastructure module `backend/src/config/redis.ts`:
+   - Singleton pattern using global instance caching.
+   - Configured connection using `process.env.REDIS_HOST` (default `uninest-redis`) and `process.env.REDIS_PORT` (default `6379`).
+   - Exponential backoff retry strategy (`retryStrategy` capping at 3000ms).
+   - Event listeners for `connect`, `ready`, `error`, `reconnecting`, `end`.
+   - Exported `initRedis()` startup ping handler and `closeRedis()` graceful shutdown handler.
+3. Updated `backend/src/server.ts` to initialize Redis on server startup and handle `SIGINT` / `SIGTERM` graceful shutdown signals.
+4. Cleaned up obsolete `version: '3.8'` line from `docker-compose.yml` per Docker Compose v2 standards.
 
 ---
 

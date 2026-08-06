@@ -13,6 +13,8 @@ import offerRoutes from "./routes/offerRoutes";
 import universityRoutes from "./routes/universityRoutes";
 import adminRoutes from "./routes/adminRoutes";
 
+import { initRedis, closeRedis } from "./config/redis";
+
 // Load environment variables
 dotenv.config();
 
@@ -44,7 +46,6 @@ const corsOptions = {
   },
   credentials: true,
 };
-
 
 // Middleware
 app.use(cors(corsOptions));
@@ -97,7 +98,23 @@ app.use(errorHandler);
 // Start server
 const PORT = process.env.PORT || 8000;
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, async () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
   console.log(`📍 API Base: http://localhost:${PORT}/api/v1`);
+  // Initialize Redis Infrastructure Connection
+  await initRedis();
 });
+
+// Graceful Shutdown Handlers
+const handleShutdown = async (signal: string) => {
+  console.log(`\n[Server] ${signal} received. Initiating graceful shutdown...`);
+  server.close(async () => {
+    console.log("[Server] Express HTTP server closed.");
+    await closeRedis();
+    process.exit(0);
+  });
+};
+
+process.on("SIGINT", () => handleShutdown("SIGINT"));
+process.on("SIGTERM", () => handleShutdown("SIGTERM"));
+
