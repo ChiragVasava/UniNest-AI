@@ -1,156 +1,198 @@
-# 🐳 UniNest AI — Complete Docker & Containerization Guide
+# 🐳 UniNest AI — Complete Project & Docker Execution Log
 
-> **Project**: UniNest AI - Campus Recruitment Portal  
-> **Documentation Target**: Docker setup, multi-stage build, OpenSSL fix, and Docker Compose orchestration.
-
----
-
-## 📌 Table of Contents
-1. [Overview & Architecture Strategy](#1-overview--architecture-strategy)
-2. [Phase 1: Multi-Stage Backend Dockerfile](#2-phase-1-multi-stage-backend-dockerfile)
-3. [Phase 2: Troubleshooting — Prisma OpenSSL Alpine Bug](#3-phase-2-troubleshooting--prisma-openssl-alpine-bug)
-4. [Phase 3: Docker Compose Implementation](#4-phase-3-docker-compose-implementation)
-5. [Docker Concepts & Deep Technical Explanations](#5-docker-concepts--deep-technical-explanations)
-6. [Commands Reference Guide](#6-commands-reference-guide)
+> **Project Name**: UniNest AI - Campus Recruitment Portal  
+> **Repository**: [GitHub - ChiragVasava/UniNest-AI](https://github.com/ChiragVasava/UniNest-AI)  
+> **Document Purpose**: A living, chronological log of EVERY instruction given by the user, actions performed by the AI assistant, responses provided, errors encountered, solutions implemented, and technical decisions made across all project sessions.
 
 ---
 
-## 1. Overview & Architecture Strategy
-
-### Containerization Rules:
-- **Backend (Express + TypeScript)**: Containerized into an optimized, multi-stage Docker image.
-- **Cache (Redis 7)**: Containerized using official `redis:7-alpine` image with volume persistence.
-- **Database (PostgreSQL)**: Maintained as an external cloud service (Neon DB / AWS RDS) for production reliability and automated backups.
-
-```
-                           LOCAL / EC2 DOCKER ECOSYSTEM
-┌────────────────────────────────────────────────────────────────────────────────────────┐
-│                                                                                        │
-│  ┌───────────────────────┐   ┌───────────────────────┐   ┌──────────────────────────┐  │
-│  │   uninest-frontend    │   │    uninest-backend    │   │      uninest-redis       │  │
-│  │   Next.js (Port 3000) │──▶│   Express (Port 8000) │──▶│  Redis v7 (Port 6379)    │  │
-│  └───────────────────────┘   └───────────┬───────────┘   └──────────────────────────┘  │
-│                                          │                                             │
-│                                          │ (PostgreSQL Connection over TLS)            │
-│                                          ▼                                             │
-│                              ┌───────────────────────┐                                 │
-│                              │   Neon DB / AWS RDS   │ (External Managed Database)     │
-│                              └───────────────────────┘                                 │
-└────────────────────────────────────────────────────────────────────────────────────────┘
-```
+## 📜 Living Documentation Rule
+> **MANDATORY**: This document MUST be updated at the end of EVERY session/chat whenever new instructions are executed, features are implemented, bugs are resolved, or architectural changes are made.
 
 ---
 
-## 2. Phase 1: Multi-Stage Backend Dockerfile
+## 📌 Table of Session Logs
+1. [Session 1 — Full Stack Technical Audit & Resume Guide](#session-1--full-stack-technical-audit--resume-guide)
+2. [Session 2 — Monorepo Cleanup, Data Security & Git Hygiene](#session-2--monorepo-cleanup-data-security--git-hygiene)
+3. [Session 3 — Docker & Redis Architectural Deep Dive & Strategy](#session-3--docker--redis-architectural-deep-dive--strategy)
+4. [Session 4 — Phase 1: Multi-Stage Backend Dockerfile Creation](#session-4--phase-1-multi-stage-backend-dockerfile-creation)
+5. [Session 5 — Phase 2: Debugging Prisma Alpine OpenSSL Engine Crash](#session-5--phase-2-debugging-prisma-alpine-openssl-engine-crash)
+6. [Session 6 — Phase 3: Docker Compose Implementation & Orchestration](#session-6--phase-3-docker-compose-implementation--orchestration)
+7. [Session 7 — Complete Conversation & History Consolidation](#session-7--complete-conversation--history-consolidation)
 
-### Created File: `backend/Dockerfile`
+---
 
+## Session 1 — Full Stack Technical Audit & Resume Guide
+
+### 💬 User Instruction
+> *"Act as a Senior Software Engineer, Technical Architect, and Resume Reviewer. Analyze my ENTIRE project workspace. Identify EVERY technology, framework, library, tool, platform, API, database, protocol, architecture pattern, security mechanism, and deployment actually used. Return results in a 14-section format."*
+
+### ⚙️ Actions Performed by AI
+1. Inspected `backend/package.json`, `frontend/package.json`, root `package.json`.
+2. Inspected backend controllers, services, repositories (`atsService.ts`, `authService.ts`, `driveService.ts`, etc.).
+3. Inspected frontend App Router routes (`(auth)`, `/admin`, `/company`, `/student`, `/university`).
+4. Analyzed database ORM (`schema.prisma`) and Gemini AI integration.
+5. Created markdown file `UniNest_Technical_Analysis_and_Resume_Guide.md` at workspace root.
+
+### 📝 AI Response Summary
+- Delivered a 14-part technical analysis detailing exact technologies (TypeScript, Next.js 16, React 19, Express.js 4, Prisma ORM 5, PostgreSQL, Google Gemini 2.0 Flash, Tailwind CSS, Multer, `pdf-parse`, Nodemailer, JWT, bcryptjs).
+- Categorized technologies into 4 resume lists (Definitely include, Mention if understood, Omit config-only tools, Recruiter expectation list).
+- Assigned honest confidence ratings for interview preparation.
+
+---
+
+## Session 2 — Monorepo Cleanup, Data Security & Git Hygiene
+
+### 💬 User Instruction
+> *"create csv folder and move these csv there and create md_files folder and move these extra md files there and push them to github repo. make sure csv and other important files does not get pushed."*
+
+### ⚙️ Actions Performed by AI
+1. Created `csv/` and `md_files/` directories.
+2. Moved student/credential CSV files (`MSU_Students.csv`, `UniNest_Credentials.csv`) into `csv/`.
+3. Moved documentation files (`Explain.md`, `UniNest_Technical_Analysis_and_Resume_Guide.md`) into `md_files/`.
+4. Updated `.gitignore` to strictly ignore sensitive data:
+   ```gitignore
+   # --- Sensitive Credentials & Student CSV Data ---
+   csv/
+   *.csv
+   Resumes/
+   ```
+5. Committed and pushed clean repository structure to GitHub (`origin/main`).
+
+### 📝 AI Response Summary
+- Verified `git status` confirmed CSV files and student credentials were ignored and isolated locally.
+- Successfully pushed documentation changes to GitHub repository.
+
+---
+
+## Session 3 — Docker & Redis Architectural Deep Dive & Strategy
+
+### 💬 User Instruction
+> *"Act as a Senior Backend Engineer, DevOps Engineer, and Software Architect. I want to add Docker and Redis to my existing UniNest AI project. DO NOT start implementing anything yet. Inspect the entire project and explain: Current Architecture, Current Tech Stack, Docker Analysis, Redis Analysis (ranked by value), Interview Value, and Final Recommendation."*
+
+### ⚙️ Actions Performed by AI
+1. Analyzed current system deployment (Vercel Frontend + AWS EC2 Node PM2 Backend + Neon DB PostgreSQL).
+2. Designed non-breaking Docker & Redis integration plan.
+3. Created microservice container diagram exposing port `8000` for backend and `6379` for Redis.
+4. Evaluated database strategy: Advised **against** containerizing PostgreSQL in production (keeping serverless Neon DB / AWS RDS for backup & reliability).
+5. Ranked Redis use-cases:
+   1. OTP Verification Cache & Expiry (10-min TTL)
+   2. Placement Drive List & Filter Cache (with approval invalidation)
+   3. JWT Revocation / Token Blacklist (on logout/suspension)
+   4. Gemini AI API Rate Limiting (sliding window)
+   5. Analytics & Leaderboard Cache
+   6. Student & Company Profile Cache
+
+### 📝 AI Response Summary
+- Provided a complete System Architecture breakdown, Redis placement matrix, and Docker containerization plan without modifying source code.
+
+---
+
+## Session 4 — Phase 1: Multi-Stage Backend Dockerfile Creation
+
+### 💬 User Instruction
+> *"Now we will implement only Phase 1. Do NOT implement Redis. Do NOT create docker-compose.yml yet. Do NOT modify any existing application logic. Do NOT change deployment. Do NOT touch Prisma configuration. Your task is ONLY to create the backend Dockerfile."*
+
+### ⚙️ Actions Performed by AI
+1. Created `backend/Dockerfile` using multi-stage build pattern (`builder` and `runner` stages).
+2. Created `backend/.dockerignore` to exclude `node_modules`, `dist`, `.env`, and git metadata.
+3. Built TypeScript code to `./dist` using `npm run build` (`prisma generate && tsc`).
+4. Pruned devDependencies using `npm prune --production` to keep runner container image lightweight.
+
+### 📝 AI Response Summary
+- Explained every Docker instruction line by line, why it is needed, and what fails if removed.
+- Showed exact commands to build image (`docker build -t uninest-backend:latest .`) and run container locally (`docker run -p 8000:8000`).
+
+---
+
+## Session 5 — Phase 2: Debugging Prisma Alpine OpenSSL Engine Crash
+
+### 💬 User Instruction
+> *"The backend Docker container builds successfully, but the container exits immediately at runtime. I inspected the logs and found: PrismaClientInitializationError ... Error: libssl.so.1.1: No such file or directory. Analyze why this happens, fix the Dockerfile using current Prisma and Node.js best practices, explain every change, and do not touch application code."*
+
+### ❓ Error Analysis
+- **Root Cause**: `node:20-alpine` (Alpine Linux) uses lightweight `musl` libc instead of standard GNU `glibc`.
+- Prisma ORM compiles native C++/Rust query engine binaries (`query-engine-linux-musl`) that dynamically link against system OpenSSL libraries (`libssl.so`).
+- The base Alpine image strips out `openssl` and `libc6-compat`, causing Prisma Client to crash on container startup.
+
+### ⚙️ Fix Applied in `backend/Dockerfile`
+Added OS-level dependency installation in **both builder and runner stages**:
 ```dockerfile
-# ==============================================================================
-# STAGE 1: Builder (Compiles TypeScript & Generates Prisma Client)
-# ==============================================================================
-FROM node:20-alpine AS builder
-
-# Install OpenSSL & libc compatibility package required by Prisma Query Engine on Alpine Linux
 RUN apk add --no-cache openssl libc6-compat
+```
 
-# Set working directory inside the container
+### 📝 AI Response Summary
+- Updated `backend/Dockerfile` with `openssl` and `libc6-compat` libraries.
+- Explained dynamic library linking (`libssl.so`) and `musl` compatibility layer.
+- Provided re-build and verification steps (`docker build`, `docker run`, `curl http://localhost:8000/api/v1/health`).
+
+---
+
+## Session 6 — Phase 3: Docker Compose Implementation & Orchestration
+
+### 💬 User Instruction
+> *"Now implement ONLY docker-compose.yml. Do NOT implement Redis logic inside application yet. Do NOT modify backend source code, frontend, Prisma, or deployment. Include ONLYuninest-backend and redis (redis:7-alpine). Ensure backend and Redis communicate through Docker networking. After creating docker-compose.yml, STOP."*
+
+### ⚙️ Actions Performed by AI
+1. Created `docker-compose.yml` at workspace root.
+2. Defined `redis` service using `redis:7-alpine`, container name `uninest-redis`, host port `6379:6379`, named volume `redis-data:/data`, and `redis-cli ping` health check.
+3. Defined `uninest-backend` service pointing to `./backend/Dockerfile`, container name `uninest-backend`, host port `8000:8000`, env file `./backend/.env`, and `REDIS_HOST=uninest-redis`.
+4. Configured container dependency ordering: `depends_on: redis: { condition: service_healthy }`.
+5. Created isolated internal Docker bridge network `uninest-network`.
+
+### 📝 AI Response Summary
+- Detailed every YAML block in `docker-compose.yml`.
+- Explained embedded Docker DNS service discovery (`uninest-redis`), volume persistence, container vs image vs service vs volume distinctions, and provided testing cheat sheet.
+
+---
+
+## Session 7 — Complete Conversation & History Consolidation
+
+### 💬 User Instruction
+> *"it is not everything we did starting to ending. i want you to add everything we did till now and update it each time we chat and implement new features in this project. i also want you to add what instruction i gave you and how yo performed it and response you give me to this chat also everything. and continue to update it as we move forward."*
+
+### ⚙️ Actions Performed by AI
+1. Consolidated all previous sessions into a comprehensive, single-source-of-truth document (`md_files/docker.md`).
+2. Documented exact user instructions, AI actions, error diagnostics, fixes, code blocks, and responses for every phase.
+3. Established a mandatory rule to append new session logs to `md_files/docker.md` as future features are implemented.
+4. Committed and pushed updated `md_files/docker.md` to GitHub.
+
+---
+
+## 🛠️ Complete Technical Reference & Cheat Sheet
+
+### 1. Dockerfile (`backend/Dockerfile`)
+```dockerfile
+FROM node:20-alpine AS builder
+RUN apk add --no-cache openssl libc6-compat
 WORKDIR /app
-
-# Copy package manifests first to leverage Docker layer caching
 COPY package*.json ./
 COPY prisma ./prisma/
-
-# Install all dependencies (including devDependencies needed for build)
 RUN npm ci
-
-# Copy TypeScript configuration and source code
 COPY tsconfig.json ./
 COPY src ./src
-
-# Generate Prisma Client and compile TypeScript to JavaScript (outDir: ./dist)
 RUN npm run build
-
-# Prune devDependencies to keep production node_modules lightweight
 RUN npm prune --production
 
-# ==============================================================================
-# STAGE 2: Runner (Lightweight Production Runtime)
-# ==============================================================================
 FROM node:20-alpine AS runner
-
-# Install OpenSSL & libc6-compat runtime shared libraries required by Prisma binary at runtime
 RUN apk add --no-cache openssl libc6-compat
-
-# Set production environment
 ENV NODE_ENV=production
 ENV PORT=8000
-
-# Set working directory
 WORKDIR /app
-
-# Copy package.json for runtime scripts/metadata
 COPY package*.json ./
-
-# Copy compiled JavaScript output from builder stage
 COPY --from=builder /app/dist ./dist
-
-# Copy production node_modules (includes generated Prisma Client) from builder stage
 COPY --from=builder /app/node_modules ./node_modules
-
-# Copy Prisma schema (required at runtime for Prisma Client query engine)
 COPY --from=builder /app/prisma ./prisma
-
-# Use non-root node user for container security
 USER node
-
-# Expose backend API port
 EXPOSE 8000
-
-# Command to start the compiled Express backend
 CMD ["node", "dist/server.js"]
 ```
 
----
-
-## 3. Phase 2: Troubleshooting — Prisma OpenSSL Alpine Bug
-
-### ❌ The Error Encountered
-During initial execution, the Docker container built successfully but **exited immediately at runtime** with the following error log:
-
-```text
-PrismaClientInitializationError: Unable to require(`.../libquery_engine-linux-musl.so.node`).
-Error: libssl.so.1.1: cannot open shared object file: No such file or directory
-```
-
-### 🔍 Root Cause Analysis
-1. **Alpine C-Library (`musl`)**: Alpine Linux uses lightweight `musl` libc instead of standard GNU `glibc`.
-2. **Prisma Native Engine**: Prisma ORM executes a native compiled Rust query engine under the hood to perform PostgreSQL queries.
-3. **Missing Shared Libraries**: Prisma's native engine dynamically binds to system OpenSSL shared libraries (`libssl.so`). The default `node:20-alpine` image omits non-essential OS libraries. Without `openssl` and `libc6-compat`, Prisma Client cannot bind to network sockets at runtime and crashes instantly.
-
-### ✅ How We Solved It
-We added the OS-level installation step to **both builder and runner stages** in `backend/Dockerfile`:
-
-```dockerfile
-RUN apk add --no-cache openssl libc6-compat
-```
-
-- **Builder Stage**: Allows `prisma generate` to detect Alpine's environment and compile the `linux-musl-openssl-3.0.x` native binary.
-- **Runner Stage**: Equips the final production runtime container with runtime dynamic libraries (`libssl.so`), preventing `PrismaClientInitializationError`.
-
----
-
-## 4. Phase 3: Docker Compose Implementation
-
-### Created File: `docker-compose.yml` (Workspace Root)
-
+### 2. Docker Compose (`docker-compose.yml`)
 ```yaml
 version: '3.8'
 
 services:
-  # ============================================================================
-  # 1. Redis Cache Service (In-Memory Data Store)
-  # ============================================================================
   redis:
     image: redis:7-alpine
     container_name: uninest-redis
@@ -168,9 +210,6 @@ services:
       retries: 5
       start_period: 5s
 
-  # ============================================================================
-  # 2. UniNest Express + TypeScript Backend API Service
-  # ============================================================================
   uninest-backend:
     build:
       context: ./backend
@@ -198,51 +237,39 @@ services:
       retries: 3
       start_period: 15s
 
-# ==============================================================================
-# Persistent Volumes Definition
-# ==============================================================================
 volumes:
   redis-data:
     driver: local
 
-# ==============================================================================
-# Isolated Internal Docker Network Definition
-# ==============================================================================
 networks:
   uninest-network:
     driver: bridge
 ```
 
+### 3. Execution Commands
+```bash
+# Start all services in background
+docker compose up -d
+
+# Rebuild images & start services
+docker compose up --build -d
+
+# View live container logs
+docker compose logs -f
+
+# View status of running Compose services
+docker compose ps
+
+# Restart backend service only
+docker compose restart uninest-backend
+
+# Stop and clean up containers, networks, and volumes
+docker compose down -v
+
+# Health Check API verification
+curl http://localhost:8000/api/v1/health
+```
+
 ---
 
-## 5. Docker Concepts & Deep Technical Explanations
-
-### A. Why Use Docker Compose Over `docker run`?
-- **Declarative Stack**: Saves container definitions in `docker-compose.yml` instead of typing 10+ command-line flags per container.
-- **Service Discovery**: Docker Compose automatically configures an internal DNS server. The backend discovers Redis using host name `uninest-redis` instead of dynamic IP addresses.
-- **Health-Aware Dependency**: `depends_on` with `condition: service_healthy` delays launching `uninest-backend` until `redis` responds with `PONG` to its health check.
-
-### B. Core Docker Definitions
-- **Image**: Immutable read-only template containing application code, libraries, and runtime binaries. *(Analogy: A Class)*.
-- **Container**: A running, isolated instance of an Image. *(Analogy: An Object)*.
-- **Service**: Configuration of a container inside Docker Compose (ports, volumes, network links, restart policy).
-- **Volume**: Host-managed persistent directory (`redis-data:/data`) allowing cached data to survive container teardowns.
-
----
-
-## 6. Commands Reference Guide
-
-| Goal | Command |
-| :--- | :--- |
-| **Build backend image manually** | `docker build -t uninest-backend:latest ./backend` |
-| **Run backend container manually** | `docker run -d --name uninest-backend-app -p 8000:8000 --env-file ./backend/.env uninest-backend:latest` |
-| **Start full stack with Docker Compose** | `docker compose up -d` |
-| **Rebuild containers with code changes** | `docker compose up --build -d` |
-| **View live logs of all services** | `docker compose logs -f` |
-| **View backend logs only** | `docker compose logs -f uninest-backend` |
-| **Check running container status & health** | `docker compose ps` |
-| **Restart backend service only** | `docker compose restart uninest-backend` |
-| **Restart Redis service only** | `docker compose restart redis` |
-| **Stop all services** | `docker compose stop` |
-| **Tear down containers, networks, & volumes** | `docker compose down -v` |
-| **Verify API Health Check** | `curl http://localhost:8000/api/v1/health` |
+*This document is active and will be continuously updated as new features, Redis caching modules, or architecture updates are implemented in UniNest AI.*
