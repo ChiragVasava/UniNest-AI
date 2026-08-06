@@ -348,14 +348,15 @@ PONG
 
 ### ⚙️ Actions Performed by AI
 1. Added `ioredis` (^5.4.1) & `@types/ioredis` to `backend/package.json`.
-2. Created reusable Redis infrastructure module `backend/src/config/redis.ts`:
+2. Resolved `npm ci` lockfile mismatch error: Ran `npm install --package-lock-only` in `backend` to sync `package-lock.json` with new dependencies (`ioredis`, `@ioredis/commands`, `cluster-key-slot`, `denque`, `redis-errors`, `redis-parser`, `standard-as-callback`).
+3. Created reusable Redis infrastructure module `backend/src/config/redis.ts`:
    - Singleton pattern using global instance caching.
    - Configured connection using `process.env.REDIS_HOST` (default `uninest-redis`) and `process.env.REDIS_PORT` (default `6379`).
    - Exponential backoff retry strategy (`retryStrategy` capping at 3000ms).
    - Event listeners for `connect`, `ready`, `error`, `reconnecting`, `end`.
    - Exported `initRedis()` startup ping handler and `closeRedis()` graceful shutdown handler.
-3. Updated `backend/src/server.ts` to initialize Redis on server startup and handle `SIGINT` / `SIGTERM` graceful shutdown signals.
-4. Cleaned up obsolete `version: '3.8'` line from `docker-compose.yml` per Docker Compose v2 standards.
+4. Updated `backend/src/server.ts` to initialize Redis on server startup and handle `SIGINT` / `SIGTERM` graceful shutdown signals.
+5. Cleaned up obsolete `version: '3.8'` line from `docker-compose.yml` per Docker Compose v2 standards.
 
 ---
 
