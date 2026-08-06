@@ -1,8 +1,8 @@
-# 🐳 UniNest AI — Complete Project & Docker Execution Log
+# 🐳 UniNest AI — Complete Project & Docker Master Execution Log
 
 > **Project Name**: UniNest AI - Campus Recruitment Portal  
 > **Repository**: [GitHub - ChiragVasava/UniNest-AI](https://github.com/ChiragVasava/UniNest-AI)  
-> **Document Purpose**: A living, chronological log of EVERY instruction given by the user, actions performed by the AI assistant, responses provided, errors encountered, solutions implemented, and technical decisions made across all project sessions.
+> **Document Purpose**: A single-source-of-truth master log of system architecture, technology evaluation, Docker containerization, OpenSSL fixes, Docker Compose orchestration, infrastructure verification, and session-by-session execution history.
 
 ---
 
@@ -11,15 +11,148 @@
 
 ---
 
-## 📌 Table of Session Logs
-1. [Session 1 — Full Stack Technical Audit & Resume Guide](#session-1--full-stack-technical-audit--resume-guide)
-2. [Session 2 — Monorepo Cleanup, Data Security & Git Hygiene](#session-2--monorepo-cleanup-data-security--git-hygiene)
-3. [Session 3 — Docker & Redis Architectural Deep Dive & Strategy](#session-3--docker--redis-architectural-deep-dive--strategy)
-4. [Session 4 — Phase 1: Multi-Stage Backend Dockerfile Creation](#session-4--phase-1-multi-stage-backend-dockerfile-creation)
-5. [Session 5 — Phase 2: Debugging Prisma Alpine OpenSSL Engine Crash](#session-5--phase-2-debugging-prisma-alpine-openssl-engine-crash)
-6. [Session 6 — Phase 3: Docker Compose Implementation & Orchestration](#session-6--phase-3-docker-compose-implementation--orchestration)
-7. [Session 7 — Complete Conversation & History Consolidation](#session-7--complete-conversation--history-consolidation)
-8. [Session 8 — Phase 3.5: Docker Compose Infrastructure Verification](#session-8--phase-35-docker-compose-infrastructure-verification)
+## 📌 Table of Contents
+1. [Part 1: Architecture & Containerization Strategy](#part-1-architecture--containerization-strategy)
+   - [1.1 Current Architecture](#11-current-architecture)
+   - [1.2 Current Tech Stack](#12-current-tech-stack)
+   - [1.3 Docker Containerization Strategy](#13-docker-containerization-strategy)
+   - [1.4 Redis Caching Strategy & Ranking](#14-redis-caching-strategy--ranking)
+   - [1.5 System Design & Interview Value](#15-system-design--interview-value)
+   - [1.6 Recommended Target Architecture](#16-recommended-target-architecture)
+2. [Part 2: Chronological Session Execution Logs](#part-2-chronological-session-execution-logs)
+   - [Session 1 — Full Stack Technical Audit & Resume Guide](#session-1--full-stack-technical-audit--resume-guide)
+   - [Session 2 — Monorepo Cleanup, Data Security & Git Hygiene](#session-2--monorepo-cleanup-data-security--git-hygiene)
+   - [Session 3 — Docker & Redis Architectural Deep Dive & Strategy](#session-3--docker--redis-architectural-deep-dive--strategy)
+   - [Session 4 — Phase 1: Multi-Stage Backend Dockerfile Creation](#session-4--phase-1-multi-stage-backend-dockerfile-creation)
+   - [Session 5 — Phase 2: Debugging Prisma Alpine OpenSSL Engine Crash](#session-5--phase-2-debugging-prisma-alpine-openssl-engine-crash)
+   - [Session 6 — Phase 3: Docker Compose Implementation & Orchestration](#session-6--phase-3-docker-compose-implementation--orchestration)
+   - [Session 7 — History Consolidation & Continuous Logging Rule](#session-7--history-consolidation--continuous-logging-rule)
+   - [Session 8 — Phase 3.5: Infrastructure Verification Test Plan](#session-8--phase-35-infrastructure-verification-test-plan)
+   - [Session 9 — Master Documentation Structuring](#session-9--master-documentation-structuring)
+3. [Part 3: Complete Technical Reference & Artifacts](#part-3-complete-technical-reference--artifacts)
+   - [3.1 Multi-Stage Dockerfile (`backend/Dockerfile`)](#31-multi-stage-dockerfile-backenddockerfile)
+   - [3.2 Docker Compose (`docker-compose.yml`)](#32-docker-compose-docker-composeyml)
+   - [3.3 Infrastructure Verification & Operations Commands](#33-infrastructure-verification--operations-commands)
+
+---
+
+# Part 1: Architecture & Containerization Strategy
+
+## 1.1 Current Architecture
+
+```
+                  ┌────────────────────────────────────────┐
+                  │          Vercel (Next.js 16)           │
+                  │        uninest.chiragvasava.me         │
+                  └───────────────────┬────────────────────┘
+                                      │ HTTPS (Bearer JWT)
+                                      ▼
+                  ┌────────────────────────────────────────┐
+                  │       AWS EC2 Ubuntu (Node / PM2)      │
+                  │      54.147.162.27 / Express API       │
+                  └───────────────────┬────────────────────┘
+                                      │ TLS / TCP (Prisma ORM)
+                                      ▼
+                  ┌────────────────────────────────────────┐
+                  │   Neon DB (Serverless PostgreSQL)      │
+                  └────────────────────────────────────────┘
+```
+
+- **Frontend**: Next.js (v16.2.6 App Router) deployed on **Vercel** (`uninest.chiragvasava.me`). Uses client-side React 19 hooks and an Axios instance (`lib/api.ts`) with request interceptors to automatically attach JWT Bearer tokens to backend requests.
+- **Backend**: Express.js (v4.18.2) REST API running directly on **AWS EC2 (Ubuntu)** managed by **PM2**. Architecture follows a strict 3-tier pattern: `Routes → Controllers → Services → Repositories → Prisma ORM`.
+- **Database**: Serverless PostgreSQL hosted on **Neon DB** (also compatible with AWS RDS PostgreSQL). Schema management and migrations are handled via Prisma ORM v5 (`schema.prisma`).
+- **Authentication & Authorization**: Stateless JWT (`jsonwebtoken`) signed with a 24-hour expiration key. Dual verification includes 6-digit Email OTPs sent via Nodemailer (`SMTP`) and Role-Based Access Control (RBAC) middleware (`authMiddleware`) enforcing roles: `STUDENT`, `COMPANY`, `UNIVERSITY`, and `ADMIN`.
+- **Deployment**:
+  - **Frontend**: Automated Git-based deployment via Vercel.
+  - **Backend**: Manual SSH deployment to AWS EC2 instance running PM2 process manager behind a custom CORS whitelist.
+- **Environment Variables**:
+  - Backend: `PORT`, `DATABASE_URL`, `JWT_SECRET`, `GEMINI_API_KEY`, `FRONTEND_URL`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`.
+  - Frontend: `NEXT_PUBLIC_API_URL`.
+
+---
+
+## 1.2 Current Tech Stack
+
+| Category | Technology | Role in UniNest |
+| :--- | :--- | :--- |
+| **Language** | **TypeScript (v5.3)** | Strict typing across full stack (API parameters, DB models, UI state). |
+| **Frontend Framework** | **Next.js 16 & React 19** | App Router, Server Components, and Client Pages. |
+| **Styling** | **Tailwind CSS v4** | Modular utility styling for dashboard UI components. |
+| **Backend API** | **Node.js & Express.js 4** | Stateless REST API server handling request orchestration. |
+| **ORM** | **Prisma ORM v5** | Type-safe database queries, auto-generated client, migrations. |
+| **Database** | **PostgreSQL (Neon DB)** | Relational data persistence (users, profiles, drives, offers, audit logs). |
+| **AI LLM** | **Google Gemini (gemini-2.0-flash)** | Resume ATS scoring, keyword extraction, and offer letter generation. |
+| **File Processing** | **Multer & pdf-parse** | In-memory PDF buffer upload and text extraction. |
+| **Email Service** | **Nodemailer** | Sending 6-digit OTP verification codes over SMTP. |
+| **Security** | **JWT & bcryptjs** | Signed Bearer tokens and 10-round salted password hashes. |
+
+---
+
+## 1.3 Docker Containerization Strategy
+
+```
+                           DOCKER COMPOSE ECOSYSTEM (Local / EC2)
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                        │
+│  ┌───────────────────────┐   ┌───────────────────────┐   ┌──────────────────────────┐  │
+│  │   uninest-frontend    │   │    uninest-backend    │   │      uninest-redis       │  │
+│  │   Next.js (Port 3000) │──▶│   Express (Port 8000) │──▶│  Redis v7 (Port 6379)    │  │
+│  └───────────────────────┘   └───────────┬───────────┘   └──────────────────────────┘  │
+│                                          │                                             │
+│                                          │ (Database Connection over TLS)              │
+│                                          ▼                                             │
+│                              ┌───────────────────────┐                                 │
+│                              │   Neon DB / AWS RDS   │ (External Managed Database)     │
+│                              └───────────────────────┘                                 │
+└────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Container Decisions:
+1. **`uninest-backend` (Express API)**: Containerized into an optimized, multi-stage Docker build (`node:20-alpine`). Runs TypeScript compilation and Prisma Client generation.
+2. **`uninest-redis` (Redis Cache)**: Containerized using official `redis:7-alpine` image with volume persistence (`redis-data`).
+3. **`uninest-frontend` (Next.js)**: Kept on Vercel for production, but containerizable using Next.js standalone mode for self-hosted Docker environments.
+4. **PostgreSQL Database**: **NOT** containerized in production. Maintained on managed serverless Neon DB / AWS RDS for automated backups, point-in-time recovery, and zero data loss risk.
+
+---
+
+## 1.4 Redis Caching Strategy & Ranking
+
+Redis transforms UniNest into a high-throughput, enterprise-ready platform.
+
+### Ranked Use Cases (Highest to Lowest Technical Value):
+1. 🥇 **OTP Verification Cache & Expiry (Highest Value)**: Store short-lived 6-digit OTPs in Redis with a 10-minute TTL (`SETEX otp:user@gmail.com 600 "849204"`). Eliminates disk writes on PostgreSQL.
+2. 🥈 **Placement Drive List & Filter Cache (High Value)**: Cache expensive relational queries (`drives` + `companies` + `cgpaCutoff` + `departments` + `batches`) per department key. Invalidate automatically on University drive approval/rejection (`DEL drives:*`).
+3. 🥉 **JWT Revocation / Token Blacklist (High Value - Security)**: Store invalidated JWT token signatures in Redis on user logout or University Admin account suspension with TTL matching remaining token lifespan.
+4. 🏅 **API Rate Limiting (High Value - Security)**: Implement sliding-window rate limiting (`INCR rate:ai_resume:user_id`) to prevent spamming Google Gemini AI endpoints.
+5. 🏅 **System Analytics & Leaderboard Cache (Medium Value)**: Cache aggregated University dashboard stats (`HSET stats:university:MSU`) for 15 minutes to reduce DB load.
+6. 🏅 **Student & Company Profile Cache (Medium Value)**: Cache verified profile payloads to speed up authorized requests.
+
+---
+
+## 1.5 System Design & Interview Value
+
+### Key Interview Highlights:
+- **JWT Blacklisting with Dynamic TTL**: Combines stateless JWT efficiency with real-time session revocation for account security.
+- **Event-Driven Write-Through Cache Invalidation**: Guarantees placement officers and students see consistent drive states without stale reads.
+- **Docker Environment Parity**: Guarantees identical execution across local development (Windows) and production servers (AWS EC2 Linux) via multi-stage containerization.
+
+---
+
+## 1.6 Recommended Target Architecture
+
+```
+[ Vercel / Next.js ] ──▶ [ AWS EC2: Nginx Reverse Proxy ]
+                                    │
+                                    ├──▶ [ Docker Container: Express API ]
+                                    │           │
+                                    │           ├──▶ [ Docker Container: Redis 7 ]
+                                    │           │
+                                    │           └──▶ [ Cloud DB: Neon PostgreSQL ]
+```
+
+---
+
+# Part 2: Chronological Session Execution Logs
 
 ---
 
@@ -76,13 +209,7 @@
 2. Designed non-breaking Docker & Redis integration plan.
 3. Created microservice container diagram exposing port `8000` for backend and `6379` for Redis.
 4. Evaluated database strategy: Advised **against** containerizing PostgreSQL in production (keeping serverless Neon DB / AWS RDS for backup & reliability).
-5. Ranked Redis use-cases:
-   1. OTP Verification Cache & Expiry (10-min TTL)
-   2. Placement Drive List & Filter Cache (with approval invalidation)
-   3. JWT Revocation / Token Blacklist (on logout/suspension)
-   4. Gemini AI API Rate Limiting (sliding window)
-   5. Analytics & Leaderboard Cache
-   6. Student & Company Profile Cache
+5. Ranked Redis use-cases (OTP cache, Placement Drive cache, JWT blacklist, Gemini AI rate limiting, Analytics cache, Profile cache).
 
 ### 📝 AI Response Summary
 - Provided a complete System Architecture breakdown, Redis placement matrix, and Docker containerization plan without modifying source code.
@@ -147,7 +274,7 @@ RUN apk add --no-cache openssl libc6-compat
 
 ---
 
-## Session 7 — Complete Conversation & History Consolidation
+## Session 7 — History Consolidation & Continuous Logging Rule
 
 ### 💬 User Instruction
 > *"it is not everything we did starting to ending. i want you to add everything we did till now and update it each time we chat and implement new features in this project. i also want you to add what instruction i gave you and how yo performed it and response you give me to this chat also everything. and continue to update it as we move forward."*
@@ -160,56 +287,116 @@ RUN apk add --no-cache openssl libc6-compat
 
 ---
 
-## Session 8 — Phase 3.5: Docker Compose Infrastructure Verification
+## Session 8 — Phase 3.5: Infrastructure Verification Test Plan
 
 ### 💬 User Instruction
 > *"Phase 3.5 — Docker Compose Verification. The docker-compose.yml has been created. Now do NOT modify any application code. Your task is only to verify the Docker Compose infrastructure. Show me the exact commands to: stop my existing backend container, remove it, build using Compose, start all services, verify backend & Redis health, inspect network & volume, verify backend DNS resolution & TCP reachability to Redis. Explain every command and expected output. Do NOT implement Redis in Express yet. Wait for my approval."*
 
 ### ⚙️ Actions Performed by AI
-1. Prepared 10-step verification test plan covering container teardown, Compose build, startup, health checks, network inspection, volume inspection, DNS lookup, and TCP socket probing.
-2. Verified no application code or Express logic was modified.
-3. Updated `md_files/docker.md` with Phase 3.5 verification instructions and expected outputs.
-4. Committed and pushed documentation update to GitHub repository.
-
-### 📝 AI Response Summary
-- Delivered the complete step-by-step CLI verification guide with command breakdowns and expected outputs.
+1. Formulated a 10-step CLI infrastructure testing guide:
+   - Container Teardown: `docker stop uninest-backend-app && docker rm uninest-backend-app`
+   - Compose Build & Launch: `docker compose build && docker compose up -d`
+   - Health Checks: `docker compose ps`, `docker exec -it uninest-redis redis-cli ping`, `curl http://localhost:8000/api/v1/health`
+   - Network & Volume Inspection: `docker network inspect`, `docker volume inspect`
+   - Inter-Container DNS & Socket Probing: `getent hosts uninest-redis`, `nc -zv uninest-redis 6379`
+2. Verified no application code was touched.
+3. Updated `md_files/docker.md` with Session 8 log and pushed to GitHub repository.
 
 ---
 
-## 🛠️ Complete Technical Reference & Cheat Sheet
+## Session 9 — Master Documentation Structuring
 
-### 1. Dockerfile (`backend/Dockerfile`)
+### 💬 User Instruction
+> *"first fix docker.md file with more data i have puted where they belong in order"*
+
+### ⚙️ Actions Performed by AI
+1. Consolidated the entire system architecture, tech stack evaluation, Docker/Redis strategy, and all 9 chronological session logs into a clean, structured master document (`md_files/docker.md`).
+2. Eliminated duplicates and aligned all sections under 3 master parts: Architecture Strategy, Chronological Session Execution Logs, and Technical Artifact References.
+3. Pushed updated master document to GitHub (`origin/main`).
+
+---
+
+# Part 3: Complete Technical Reference & Artifacts
+
+## 3.1 Multi-Stage Dockerfile (`backend/Dockerfile`)
+
 ```dockerfile
+# ==============================================================================
+# STAGE 1: Builder (Compiles TypeScript & Generates Prisma Client)
+# ==============================================================================
 FROM node:20-alpine AS builder
+
+# Install OpenSSL & libc compatibility package required by Prisma Query Engine on Alpine Linux
 RUN apk add --no-cache openssl libc6-compat
+
+# Set working directory inside the container
 WORKDIR /app
+
+# Copy package manifests first to leverage Docker layer caching
 COPY package*.json ./
 COPY prisma ./prisma/
+
+# Install all dependencies (including devDependencies needed for build)
 RUN npm ci
+
+# Copy TypeScript configuration and source code
 COPY tsconfig.json ./
 COPY src ./src
+
+# Generate Prisma Client and compile TypeScript to JavaScript (outDir: ./dist)
 RUN npm run build
+
+# Prune devDependencies to keep production node_modules lightweight
 RUN npm prune --production
 
+# ==============================================================================
+# STAGE 2: Runner (Lightweight Production Runtime)
+# ==============================================================================
 FROM node:20-alpine AS runner
+
+# Install OpenSSL & libc6-compat runtime shared libraries required by Prisma binary at runtime
 RUN apk add --no-cache openssl libc6-compat
+
+# Set production environment
 ENV NODE_ENV=production
 ENV PORT=8000
+
+# Set working directory
 WORKDIR /app
+
+# Copy package.json for runtime scripts/metadata
 COPY package*.json ./
+
+# Copy compiled JavaScript output from builder stage
 COPY --from=builder /app/dist ./dist
+
+# Copy production node_modules (includes generated Prisma Client) from builder stage
 COPY --from=builder /app/node_modules ./node_modules
+
+# Copy Prisma schema (required at runtime for Prisma Client query engine)
 COPY --from=builder /app/prisma ./prisma
+
+# Use non-root node user for container security
 USER node
+
+# Expose backend API port
 EXPOSE 8000
+
+# Command to start the compiled Express backend
 CMD ["node", "dist/server.js"]
 ```
 
-### 2. Docker Compose (`docker-compose.yml`)
+---
+
+## 3.2 Docker Compose (`docker-compose.yml`)
+
 ```yaml
 version: '3.8'
 
 services:
+  # ============================================================================
+  # 1. Redis Cache Service (In-Memory Data Store)
+  # ============================================================================
   redis:
     image: redis:7-alpine
     container_name: uninest-redis
@@ -227,6 +414,9 @@ services:
       retries: 5
       start_period: 5s
 
+  # ============================================================================
+  # 2. UniNest Express + TypeScript Backend API Service
+  # ============================================================================
   uninest-backend:
     build:
       context: ./backend
@@ -254,39 +444,42 @@ services:
       retries: 3
       start_period: 15s
 
+# ==============================================================================
+# Persistent Volumes Definition
+# ==============================================================================
 volumes:
   redis-data:
     driver: local
 
+# ==============================================================================
+# Isolated Internal Docker Network Definition
+# ==============================================================================
 networks:
   uninest-network:
     driver: bridge
 ```
 
-### 3. Execution Commands
-```bash
-# Start all services in background
-docker compose up -d
+---
 
-# Rebuild images & start services
-docker compose up --build -d
+## 3.3 Infrastructure Verification & Operations Commands
 
-# View live container logs
-docker compose logs -f
-
-# View status of running Compose services
-docker compose ps
-
-# Restart backend service only
-docker compose restart uninest-backend
-
-# Stop and clean up containers, networks, and volumes
-docker compose down -v
-
-# Health Check API verification
-curl http://localhost:8000/api/v1/health
-```
+| Operational Goal | Exact CLI Command |
+| :--- | :--- |
+| **Stop manual container** | `docker stop uninest-backend-app && docker rm uninest-backend-app` |
+| **Build images via Compose** | `docker compose build` |
+| **Start stack in background** | `docker compose up -d` |
+| **Rebuild & start stack** | `docker compose up --build -d` |
+| **Check service health status**| `docker compose ps` |
+| **Ping Redis health** | `docker exec -it uninest-redis redis-cli ping` |
+| **Ping Backend API health** | `curl http://localhost:8000/api/v1/health` |
+| **Inspect Docker Network** | `docker network inspect $(docker network ls -q -f name=uninest-network)` |
+| **Inspect Redis Volume** | `docker volume inspect $(docker volume ls -q -f name=redis-data)` |
+| **Verify Container DNS Lookup** | `docker exec -it uninest-backend getent hosts uninest-redis` |
+| **Verify Redis Socket Probe** | `docker exec -it uninest-backend nc -zv uninest-redis 6379` |
+| **View live unified logs** | `docker compose logs -f` |
+| **Restart backend service** | `docker compose restart uninest-backend` |
+| **Stop & remove stack** | `docker compose down -v` |
 
 ---
 
-*This document is active and will be continuously updated as new features, Redis caching modules, or architecture updates are implemented in UniNest AI.*
+*This master document is active and will be continuously updated as new features, Redis caching modules, or architecture updates are implemented in UniNest AI.*
