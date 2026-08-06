@@ -46,6 +46,11 @@ yarn-error.log*
 # --- Vercel ---
 .vercel
 
-# --- Local Documentation ---
+# --- Local Documentation & Data ---
 MD Files/
 /MD Files/
+
+# --- Sensitive Credentials & Student CSV Data ---
+csv/
+*.csv
+Resumes/
