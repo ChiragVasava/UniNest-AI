@@ -19,6 +19,7 @@
 5. [Session 5 — Phase 2: Debugging Prisma Alpine OpenSSL Engine Crash](#session-5--phase-2-debugging-prisma-alpine-openssl-engine-crash)
 6. [Session 6 — Phase 3: Docker Compose Implementation & Orchestration](#session-6--phase-3-docker-compose-implementation--orchestration)
 7. [Session 7 — Complete Conversation & History Consolidation](#session-7--complete-conversation--history-consolidation)
+8. [Session 8 — Phase 3.5: Docker Compose Infrastructure Verification](#session-8--phase-35-docker-compose-infrastructure-verification)
 
 ---
 
@@ -131,7 +132,7 @@ RUN apk add --no-cache openssl libc6-compat
 ## Session 6 — Phase 3: Docker Compose Implementation & Orchestration
 
 ### 💬 User Instruction
-> *"Now implement ONLY docker-compose.yml. Do NOT implement Redis logic inside application yet. Do NOT modify backend source code, frontend, Prisma, or deployment. Include ONLYuninest-backend and redis (redis:7-alpine). Ensure backend and Redis communicate through Docker networking. After creating docker-compose.yml, STOP."*
+> *"Now implement ONLY docker-compose.yml. Do NOT implement Redis logic inside application yet. Do NOT modify backend source code, frontend, Prisma, or deployment. Include ONLY uninest-backend and redis (redis:7-alpine). Ensure backend and Redis communicate through Docker networking. After creating docker-compose.yml, STOP."*
 
 ### ⚙️ Actions Performed by AI
 1. Created `docker-compose.yml` at workspace root.
@@ -156,6 +157,22 @@ RUN apk add --no-cache openssl libc6-compat
 2. Documented exact user instructions, AI actions, error diagnostics, fixes, code blocks, and responses for every phase.
 3. Established a mandatory rule to append new session logs to `md_files/docker.md` as future features are implemented.
 4. Committed and pushed updated `md_files/docker.md` to GitHub.
+
+---
+
+## Session 8 — Phase 3.5: Docker Compose Infrastructure Verification
+
+### 💬 User Instruction
+> *"Phase 3.5 — Docker Compose Verification. The docker-compose.yml has been created. Now do NOT modify any application code. Your task is only to verify the Docker Compose infrastructure. Show me the exact commands to: stop my existing backend container, remove it, build using Compose, start all services, verify backend & Redis health, inspect network & volume, verify backend DNS resolution & TCP reachability to Redis. Explain every command and expected output. Do NOT implement Redis in Express yet. Wait for my approval."*
+
+### ⚙️ Actions Performed by AI
+1. Prepared 10-step verification test plan covering container teardown, Compose build, startup, health checks, network inspection, volume inspection, DNS lookup, and TCP socket probing.
+2. Verified no application code or Express logic was modified.
+3. Updated `md_files/docker.md` with Phase 3.5 verification instructions and expected outputs.
+4. Committed and pushed documentation update to GitHub repository.
+
+### 📝 AI Response Summary
+- Delivered the complete step-by-step CLI verification guide with command breakdowns and expected outputs.
 
 ---
 
